@@ -1,0 +1,187 @@
+﻿@using ExilumBBS.Models.Entity
+@using System.Text.Json
+@using System.Diagnostics
+@using ExilumBBS.State
+@inherits LayoutComponentBase
+@inject IUserService userService
+@inject HttpTools httpTools
+@inject NavigationManager Navigation
+@inject PostListState postListState
+
+<MApp>
+    <MMain>
+        <MAppBar>
+            <MAppBarNavIcon @onclick="() => _drawer = !(_drawer ?? false)"></MAppBarNavIcon>
+
+            <MToolbarTitle onclick="">追放社区</MToolbarTitle>
+
+            <MSpacer></MSpacer>
+
+            <MButton Icon>
+                <MIcon>mdi-magnify</MIcon>
+            </MButton>
+
+            <MButton Icon>
+                <MIcon>mdi-filter</MIcon>
+            </MButton>
+
+            <MButton Icon>
+                <MIcon>mdi-dots-vertical</MIcon>
+            </MButton>
+        </MAppBar>
+
+        <MNavigationDrawer @bind-Value="_drawer" Absolute Temporary>
+            @if (currentUser != null)
+            {
+                <MList @onclick="GoToLogin">
+                    <MListItem>
+                        <MListItemAvatar>
+
+                            <MImage Src="@currentUser.Avatar"></MImage>
+
+                        </MListItemAvatar>
+                    </MListItem>
+
+                    <MListItem Link>
+                        <MListItemContent>
+                            <MListItemTitle class="text-h6">
+                                @currentUser.NickName
+
+                            </MListItemTitle>
+
+                            <MListItemSubtitle>UID: @currentUser.Uid</MListItemSubtitle>
+                        </MListItemContent>
+
+                        <MListItemAction>
+                            <MIcon>mdi-menu-down</MIcon>
+                        </MListItemAction>
+                    </MListItem>
+                </MList>
+            }
+
+            @if (currentUser == null)
+            {
+                <MList @onclick="GoToLogin">
+                    <MListItem>
+                        <MListItemAvatar>
+
+                            @* <MImage Src="@currentUser.Avatar"></MImage> *@
+
+                        </MListItemAvatar>
+                    </MListItem>
+
+                    <MListItem Link>
+                        <MListItemContent>
+                            <MListItemTitle class="text-h6">
+                                未登录
+                            </MListItemTitle>
+                        </MListItemContent>
+
+                        <MListItemAction>
+                            <MIcon>mdi-menu-down</MIcon>
+                        </MListItemAction>
+                    </MListItem>
+                </MList>
+            }
+
+            <MDivider></MDivider>
+            <MList Nav
+                   Dense>
+                <MListItemGroup @bind-Value="_selectedItem"
+                                Color="primary">
+                    @foreach (var item in _items)
+                    {
+                        <MListItem @onclick="() => ChangeCategory(item.Id)">
+                            <MListItemIcon>
+                                <MIcon>@item.Icon</MIcon>
+                            </MListItemIcon>
+
+                            <MListItemContent>
+                                <MListItemTitle>@item.Text</MListItemTitle>
+                            </MListItemContent>
+                        </MListItem>
+                    }
+                </MListItemGroup>
+            </MList>
+        </MNavigationDrawer>
+        @Body
+    </MMain>
+</MApp>
+@code
+{
+    private bool? _drawer;
+    private StringNumber? _value = default;
+    private StringNumber _selectedItem = 0;
+    private UserEntity? currentUser;
+    private MenuItem[] _items = new MenuItem[]
+   {
+       new MenuItem { Text= "发现", Icon= "mdi-folder",Id=1 },
+       new MenuItem { Text= "关注", Icon= "mdi-account-multiple",Id=100 },
+       new MenuItem { Text= "休息室", Icon= "mdi-star",Id=2 },
+       new MenuItem { Text= "攻略", Icon= "mdi-history",Id=3 },
+       new MenuItem { Text= "同人", Icon= "mdi-check-circle",Id=7 },
+       new MenuItem { Text= "世界观", Icon= "mdi-upload",Id=4 },
+       new MenuItem { Text= "官方", Icon= "mdi-cloud-upload",Id=5 },
+       new MenuItem { Text= "互助厅",Icon= "mdi-cloud-upload",Id=8}
+
+   };
+
+    class MenuItem
+    {
+        public string Text { get; set; } = "";
+        public string Icon { get; set; } = "";
+        public int Id { get; set; }
+        /// <summary>
+        /// 菜单类型，预留
+        /// </summary>
+        public string Type { get; set; } = "Category";
+
+        /// <summary>
+        /// 如果不是社区分类并且是跳转到其他页面的菜单，那需要设置路由
+        /// </summary>
+        public string? Route { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await GetUserProfile();
+    }
+
+    /// <summary>
+    /// 切换菜单项
+    /// </summary>
+    private void ChangeCategory(int categoryId)
+    {
+        postListState.CategoryId = categoryId;
+        _drawer = !(_drawer ?? false);
+    }
+
+    private async Task GetUserProfile()
+    {
+        var result = await httpTools.PostAsync("community/member/info", null);
+        if (result != null && result.Data != null)
+        {
+            var userNode = result.Data.Value.TryGetProperty("user", out JsonElement userElement);
+
+            var user = userElement.Deserialize<UserEntity>();
+
+            if (user != null)
+            {
+                await userService.CreateOrUpdateUserProfile(user);
+                currentUser = user;
+            }
+        }
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+
+    void ValueChanged(StringNumber value)
+    {
+        _value = value;
+        _drawer = false;
+    }
+}

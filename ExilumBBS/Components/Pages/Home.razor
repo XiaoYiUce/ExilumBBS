@@ -1,0 +1,209 @@
+﻿@page "/"
+
+@using System.Diagnostics
+@using System.Text.Json
+@using ExilumBBS.Models.DTO
+@using ExilumBBS.Models.Response
+@using ExilumBBS.State
+@using System.ComponentModel
+@using System.Threading.Tasks
+
+@inject ITokenService tokenService
+@inject HttpTools httpTools
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@inject PostListState postListState
+
+<MCard Height="775"
+       Class="overflow-auto"
+       Style="margin: 0 auto"
+       Id="infinite-scroll-usage">
+    <MCellGroup Subheader="公告">
+        @foreach (var item in TopPostPreviews)
+        {
+            <MCell Title="@item.Title" Href="@($"/post/{item.TopicId}")"></MCell>
+        }
+    </MCellGroup>
+    <MList ThreeLine>
+        <MSubheader>帖子</MSubheader>
+        @foreach (var item in PostList)
+        {
+            <MListItem Href="@($"/post/{item.TopicId}")">
+                <MListItemAvatar>
+                    <MImage Src="@item.UserAvatar"></MImage>
+                </MListItemAvatar>
+                <MListItemContent>
+                    <MListItemTitle>@item.Title</MListItemTitle>
+                    <MListItemSubtitle>@item.Content</MListItemSubtitle>
+                </MListItemContent>
+            </MListItem>
+            <div class="d-flex align-center ml-4">
+                <div class="ml-2">
+                    <MIcon Color="default">mdi-comment-outline</MIcon>
+                    <span class="text-caption text--secondary ml-1">@item.CommentNum</span>
+                </div>
+                <div class="ml-2">
+                    <MButton Color="@(item.IsLike ? "primary" : "default")" Icon Size="small" OnClick="() => ToggleLike(item)">
+                        <MIcon>@(item.IsLike ? "mdi-thumb-up" : "mdi-thumb-up-outline")</MIcon>
+                    </MButton>
+
+                    <span class="text-caption text--secondary ml-1">@item.LikeNum</span>
+                </div>
+
+            </div>
+            <MDivider></MDivider>
+        }
+    </MList>
+    <MInfiniteScroll OnLoad="@OnLoad"
+                     Parent="#infinite-scroll-usage">
+    </MInfiniteScroll>
+</MCard>
+
+
+@code {
+    /// <summary>
+    /// 置顶帖子
+    /// </summary>
+    private List<TopPostPreview> TopPostPreviews = [];
+
+    /// <summary>
+    /// 帖子列表
+    /// </summary>
+    private List<PostPreview> PostList = [];
+
+    /// <summary>
+    /// 是否还有下一页内容
+    /// </summary>
+    private bool NextPage = true;
+    private long LastTid = 0;
+    private long PubTime = 0;
+    private long ReplyTime = 0;
+    private long HotValue = 0;
+
+    /// <summary>
+    /// 切换帖子点赞状态
+    /// </summary>
+    /// <param name="postPreview"></param>
+    /// <returns></returns>
+    private async Task ToggleLike(PostPreview postPreview)
+    {
+        // 判断登录状态
+        if (await tokenService.GetToken() == null)
+        {
+            Debug.WriteLine("请先登录");
+            return;
+        }
+
+        var response = await httpTools.GetAsync($"/community/topic/like/{postPreview.TopicId}");
+        if (response != null && response.Code == 0)
+        {
+            Debug.WriteLine("点赞成功");
+            postPreview.IsLike = postPreview.IsLike == true ? false : true;
+        }
+        else if (response != null && response.Code == 401)
+        {
+            // 登录失效 需要重新登录
+            Debug.WriteLine("请重新登陆!");
+        }
+    }
+    /// <summary>
+    /// 触底加载
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    private async Task OnLoad(InfiniteScrollLoadEventArgs args)
+    {
+        await PostLoad();
+        args.Status = NextPage == false ? InfiniteScrollLoadStatus.Empty : InfiniteScrollLoadStatus.Ok;
+    }
+
+    /// <summary>
+    /// 加载帖子
+    /// </summary>
+    /// <returns></returns>
+    private async Task<List<PostPreview>> PostLoad()
+    {
+#if DEBUG
+            Debug.WriteLine("触底加载");
+#endif
+        var result = await httpTools.GetAsync($"/community/topic/list?sort_type={(int)postListState.SortType}&category_id={postListState.CategoryId}&query_type={postListState.QueryType}&last_tid={LastTid}&pub_time={PubTime}&reply_time={ReplyTime}&hot_value={HotValue}");
+
+        if (result != null && result.Data != null)
+        {
+            var pageList = result.Data.Value.Deserialize<PostPageListResponse>(); ;
+            if (pageList != null)
+            {
+                NextPage = pageList.NextPage;
+                LastTid = pageList.LastTid;
+                PubTime = pageList.PubTime;
+                ReplyTime = pageList.ReplyTime;
+                HotValue = pageList.HotValue;
+
+                if (pageList.List.Count > 0)
+                {
+                    PostList.AddRange(pageList.List);
+                    return pageList.List;
+                }
+            }
+        }
+
+        return [];
+
+    }
+
+    /// <summary>
+    /// 加载置顶公告
+    /// </summary>
+    /// <returns></returns>
+    private async Task PostTop()
+    {
+#if DEBUG
+        Debug.WriteLine("获取置顶帖子");
+#endif
+        var result = await httpTools.GetAsync($"/community/top?category_id={postListState.CategoryId}", true);
+        if (result != null && result.Data != null)
+        {
+            var topList = result.Data.Value.Deserialize<List<TopPostPreview>>();
+            if (topList != null && topList.Count > 0)
+            {
+                TopPostPreviews.AddRange(topList);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 状态机变化时触发
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private async void OnStateChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        // 首先清空原来的公告以及帖子列表
+        TopPostPreviews = [];
+        PostList = [];
+
+        //页面拉回顶部
+        await JS.InvokeVoidAsync("eval",
+               "document.getElementById('infinite-scroll-usage').scrollTop = 0;");
+
+        // 重新加载公告以及帖子
+        await PostTop();
+        await PostLoad();
+
+        //触发 UI 刷新
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        postListState.PropertyChanged += OnStateChanged;
+        await PostTop();
+        Debug.WriteLine("Home初始化");
+    }
+
+    public void Dispose()
+    {
+        postListState.PropertyChanged -= OnStateChanged;
+    }
+}

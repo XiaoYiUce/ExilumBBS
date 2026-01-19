@@ -1,0 +1,104 @@
+﻿@using System.Globalization
+@using ExilumBBS.Models.Response.Post
+
+<MList dense>
+    @if (Comments != null && Comments.Count > 0)
+    {
+        @foreach (var comment in Comments)
+        {
+            <MListItem>
+
+                <MListItemContent>
+                    <MListItemTitle class="d-flex align-center">
+                        <MAvatar size="40" Class="mr-2">
+                            <MImage Src="@comment.UserAvatar"></MImage>
+                        </MAvatar>
+                        <span class="font-weight-medium">@comment.UserNickName</span>
+                        <MChip Size="x-small"
+                               Class="ml-2"
+                               Color="primary">
+                            @($"LV{comment.UserLevel}")
+                        </MChip>
+                        @if (comment.IsAuthor)
+                        {
+                            <MChip Size="x-small"
+                                   Class="ml-2"
+                                   Color="primary">
+                                楼主
+                            </MChip>
+                        }
+                        <span class="text-caption text--secondary ml-2">
+                            @comment.CreateTime
+                        </span>
+                    </MListItemTitle>
+
+                    @((MarkupString)comment.Content)
+
+                    <div class="d-flex align-center mt-2">
+                        <MButton Icon
+                                 Size="small"
+                                 Color="@(comment.IsLike ? "primary" : "default")"
+                                 OnClick="() => ToggleLike(comment)">
+                            <MIcon>@(comment.IsLike ? "mdi-thumb-up" : "mdi-thumb-up-outline")</MIcon>
+                        </MButton>
+                        <span class="text-caption text--secondary ml-1">@comment.LikeNum</span>
+
+                        <MButton Icon
+                                 Size="small"
+                                 Color="@(comment.IsDislike ? "primary" : "default")"
+                                 OnClick="() => ToggleDisLike(comment)">
+                            <MIcon>@(comment.IsDislike ? "mdi-thumb-down" : "mdi-thumb-down-outline")</MIcon>
+                        </MButton>
+                        <span class="text-caption text--secondary ml-1">@comment.DislikeNum</span>
+
+                        <MButton Text
+                                 Size="small"
+                                 Class="ml-3"
+                                 OnClick="() => {}">
+                            <MIcon left>mdi-reply</MIcon>
+                            回复
+                        </MButton>
+                    </div>
+                </MListItemContent>
+            </MListItem>
+
+            <MDivider inset />
+        }
+    }
+
+</MList>
+
+@code {
+    [Parameter]
+    public List<CommentResponse>? Comments { get; set; }
+
+    public async Task<bool> ToggleLike(CommentResponse comment)
+    {
+        if (comment.IsLike == false)
+        {
+            comment.IsLike = true;
+            comment.IsDislike = false;
+        }
+        else
+        {
+            comment.IsLike = false;
+            comment.IsDislike = true;
+        }
+
+        return true;
+    }
+
+    public async Task<bool> ToggleDisLike(CommentResponse comment)
+    {
+        if (comment.IsDislike == true)
+        {
+            comment.IsDislike = false;
+        }
+        else
+        {
+            comment.IsDislike = true;
+        }
+
+        return true;
+    }
+}

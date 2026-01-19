@@ -1,0 +1,222 @@
+﻿@page "/post/{Id:long}"
+
+@layout PostLayout
+
+@using System.Diagnostics
+@using System.Text.Json
+@using ExilumBBS.Components.Components
+@using ExilumBBS.Models.DTO.Post
+@using ExilumBBS.Models.Response
+@using ExilumBBS.Models.Response.Post
+
+@inject HttpTools httpTools
+@if (postInfo != null && !string.IsNullOrEmpty(postInfo.Content))
+{
+
+    <MCard Height="775"
+           Class="overflow-auto"
+           Style="margin: 0 auto"
+           Id="infinite-scroll-usage">
+        <MList dense>
+            <MListItem>
+
+                <MListItemContent>
+                    <MListItemTitle class="d-flex align-center">
+                        <MAvatar size="40" Class="mr-2">
+                            <MImage Src="@postInfo.UserAvatar"></MImage>
+                        </MAvatar>
+                        <span class="font-weight-medium">@postInfo.UserNickName</span>
+                        <MChip Size="x-small"
+                               Class="ml-2"
+                               Color="primary">
+                            @($"LV{postInfo.UserLevel}")
+                        </MChip>
+                        <MChip Size="x-small"
+                               Class="ml-2"
+                               Color="primary">
+                            楼主
+                        </MChip>
+                        <span class="text-caption text--secondary ml-2">
+                            @postInfo.CreateTime
+                        </span>
+                    </MListItemTitle>
+
+                    @((MarkupString)postInfo.Content)
+
+                    <div class="d-flex align-center mt-2 ml-2 mb-2">
+                        <MButton Icon
+                                 Size="small"
+                                 Color="@(postInfo.IsLike ? "primary" : "default")"
+                                 OnClick="() => {}">
+                            <MIcon>@(postInfo.IsLike ? "mdi-thumb-up" : "mdi-thumb-up-outline")</MIcon>
+                        </MButton>
+                        <span class="text-caption text--secondary ml-1">@postInfo.LikeNum</span>
+
+                        <MButton Icon
+                                 Size="small"
+                                 Color="@(postInfo.IsBad ? "primary" : "default")"
+                                 OnClick="() => {}">
+                            <MIcon>@(postInfo.IsBad ? "mdi-thumb-down" : "mdi-thumb-down-outline")</MIcon>
+                        </MButton>
+                        <span class="text-caption text--secondary ml-1">@postInfo.BadNum</span>
+
+                        <MButton Text
+                                 Size="small"
+                                 Class="ml-3"
+                                 OnClick="() => {}">
+                            <MIcon left>mdi-reply</MIcon>
+                            回复
+                        </MButton>
+                    </div>
+                </MListItemContent>
+            </MListItem>
+
+            <MDivider inset />
+        </MList>
+
+        <MSubheader>评论(@postInfo.CommentNum)</MSubheader>
+        @if (commentList.Count > 0)
+        {
+            <Comment Comments="commentList">
+
+            </Comment>
+        }
+
+        <MInfiniteScroll OnLoad="@CommentOnLoad"
+                         Parent="#infinite-scroll-usage">
+        </MInfiniteScroll>
+    </MCard>
+}
+
+<style>
+    .emoji {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    img {
+        max-width: 100%;
+    }
+</style>
+
+
+@code {
+    [Parameter]
+    public long Id { get; set; }
+
+    private PostInfoResponse? postInfo;
+    private List<CommentResponse> commentList = [];
+    private PostCommentFilterDTO? filterDTO;
+
+    /// <summary>
+    /// 是否只看楼主
+    /// </summary>
+    private bool OnlyAuthor { get; set; }
+    /// <summary>
+    /// 排序方式
+    /// </summary>
+    private int Sort { get; set; } = 0;
+    /// <summary>
+    /// 是否还有下一页
+    /// </summary>
+    private bool NextPage { get; set; } = true;
+
+    /// <summary>
+    /// 获取帖子主体信息
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetTopicInfo()
+    {
+        Debug.WriteLine($"获取帖子{Id}的信息");
+        var response = await httpTools.GetAsync($"/community/topic/{Id}");
+        if (response != null && response.Code == 0 && response.Data != null)
+        {
+            var post = response.Data.Value.Deserialize<PostInfoResponse>();
+            postInfo = post;
+            if (postInfo != null && postInfo.CommentNum < 1)
+            {
+                NextPage = false;
+            }
+            else if (postInfo == null)
+            {
+                NextPage = false;
+            }
+        }
+        else
+        {
+            //此处应为获取失败后错误处理
+        }
+    }
+
+    private async Task CommentOnLoad(InfiniteScrollLoadEventArgs args)
+    {
+        await PostTopicCommentList();
+        args.Status = NextPage == false ? InfiniteScrollLoadStatus.Empty : InfiniteScrollLoadStatus.Ok;
+    }
+
+    private async Task PostTopicCommentList()
+    {
+        Debug.WriteLine($"获取帖子{Id}的评论");
+
+        if (NextPage == true)
+        {
+            if (filterDTO == null)
+            {
+                filterDTO = new PostCommentFilterDTO()
+                {
+                    TopicId = Id
+                };
+            }
+
+            //设置查询DTO参数
+            filterDTO.OnlyAuthor = this.OnlyAuthor;
+            filterDTO.Sort = this.Sort;
+
+            var response = await httpTools.PostAsync($"/community/comment/list", filterDTO);
+
+            if (response != null && response.Code == 0 && response.Data != null)
+            {
+                var postList = response.Data.Value.Deserialize<CommentPageListResponse>();
+                if (postList != null)
+                {
+                    filterDTO.HotValue = postList.HotValue;
+                    filterDTO.LastId = postList.LastId;
+                    NextPage = postList.NextPage;
+                    commentList.AddRange(postList.List);
+                }
+                else
+                {
+                    //评论获取失败后错误处理
+                }
+
+            }
+            else
+            {
+                //此处应为获取失败后错误处理
+            }
+        }
+    }
+
+    // private async Task ToggleLike()
+    // {
+
+    // }
+
+    // private Task ToggleBad()
+    // {
+
+    // }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await GetTopicInfo();
+        await PostTopicCommentList();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+}

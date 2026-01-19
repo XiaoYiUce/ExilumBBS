@@ -1,0 +1,104 @@
+﻿@page "/login"
+@using ExilumBBS.Models.DTO.Auth
+@using System.Security.Cryptography
+@using System.Text
+@using System.Text.RegularExpressions
+@using System.Diagnostics
+@using System.Text.Json
+@using ExilumBBS.Models.Response
+@layout LoginLayout
+
+@inject HttpTools httpTools
+@inject ITokenService tokenService
+@inject NavigationManager Navigation
+
+<MTextField @bind-Value="userName"
+            Type="text"
+            Label="用户名"
+            Required
+            Hint="请输入用户名">
+</MTextField>
+
+<MTextField @bind-Value="password"
+            AppendIcon="@(showPassword ? "mdi-eye" : "mdi-eye-off")"
+            Type="@(showPassword ? "text" : "password")"
+            Required
+            Label="密码"
+            Hint="请输入密码"
+            OnAppendClick="() => showPassword = !showPassword">
+</MTextField>
+
+<MButton OnClick="LoginAsync">登录</MButton>
+<MButton>短信登录</MButton>
+@code {
+    // 中国大陆手机号正则（11位，以13/14/15/17/18/19开头）
+    private static readonly Regex PhoneRegex = new Regex(
+        @"^1[3-9]\d{9}$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    // 简化版邮箱正则（符合大多数场景）
+    private static readonly Regex EmailRegex = new Regex(
+        @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private string userName = "";
+    private string password = "";
+
+    private bool showPassword = false;
+
+    private async Task LoginAsync()
+    {
+        if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
+        {
+            var cryptPasswd = "";
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] inputBytes = Encoding.UTF8.GetBytes(password);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                // 转换为十六进制字符串（小写）
+                StringBuilder sb = new StringBuilder();
+                foreach (byte b in hashBytes)
+                {
+                    sb.Append(b.ToString("x2")); // "x2" 表示两位小写十六进制
+                }
+                cryptPasswd = sb.ToString();
+            }
+
+            var type = "";
+
+            if (PhoneRegex.IsMatch(userName))
+            {
+                type = "phone";
+            }
+
+            if (EmailRegex.IsMatch(userName))
+            {
+                type = "mail";
+            }
+
+            var loginDTO = new LoginPostDTO()
+            {
+                AccountName = userName,
+                Passwd = cryptPasswd,
+                Source = type
+            };
+
+            var response = await httpTools.PostAsync("/login/account", loginDTO, true);
+
+            if (response != null && response.Code == 0 && response.Data != null)
+            {
+                var resNode = response.Data.Value.TryGetProperty("account", out JsonElement resElement);
+
+                var resData = resElement.Deserialize<LoginSuccessResponse>();
+
+                if (resData != null)
+                {
+                    await tokenService.SetTokenAsync(resData.Token);
+                    Navigation.NavigateTo("/");
+                }
+            }
+        }
+    }
+}
+
