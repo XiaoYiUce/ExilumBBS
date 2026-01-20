@@ -39,14 +39,43 @@
                     </MListItemTitle>
 
                     @*评论主体部分*@
-                    <div class="mt-2 text-sm-body-2">
+                    <div class="mt-2 text-sm-body-2 ml-10">
                         @((MarkupString)comment.Content)
                     </div>
 
                     @*评论回复部分*@
+                    <div class="reply ml-10">
+                        @if (comment.CommentReply != null && comment.CommentReply.Count > 0)
+                        {
+                            bool showMore = comment.CommentReply.Count > 2;
+
+                            // 显示前两条回复或全部回复
+                            var repliesToShow = showMore ? comment.CommentReply.Take(2) : comment.CommentReply;
+
+                            @foreach (var item in repliesToShow)
+                            {
+                                <div class="d-flex">
+                                    @item.UserNickName
+
+                                    @if (!string.IsNullOrEmpty(item.ReplyTo))
+                                    {
+                                        <div>
+                                            回复 @item.ReplyTo
+                                        </div>
+                                    }
+
+                                    :
+
+                                </div>
+                                <div class="text-sm-body-2 mt-1">
+                                    @((MarkupString)item.Content)
+                                </div>
+                            }
+                        }
+                    </div>
 
 
-                    <div class="d-flex align-center">
+                    <div class="d-flex align-center ml-10">
                         <MButton Icon
                                  Size="small"
                                  Color="@(comment.IsLike ? "primary" : "default")"
@@ -73,7 +102,7 @@
                 </MListItemContent>
             </MListItem>
 
-            <MDivider inset />
+            <MDivider />
         }
     }
 
@@ -87,6 +116,10 @@
 
     img {
         max-width: 100%;
+    }
+
+    .reply {
+        background-color: #f0dfd7;
     }
 </style>
 
