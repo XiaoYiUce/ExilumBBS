@@ -41,6 +41,7 @@ namespace ExilumBBS
 
             // 注入用户状态信息类
             builder.Services.AddSingleton<UserState>();
+            builder.Services.AddSingleton<AppState>();
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();

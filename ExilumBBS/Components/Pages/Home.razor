@@ -13,7 +13,10 @@
 @inject NavigationManager Navigation
 @inject PostListState postListState
 @inject UserState userState
+@inject AppState appState
 @inject HttpTools httpTools
+
+@implements IDisposable
 
 <MCard Height="775"
        Class="overflow-auto"
@@ -205,6 +208,12 @@
         postListState.PropertyChanged += OnStateChanged;
         await PostTop();
         Debug.WriteLine("Home初始化");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        appState.CurrentMenu = postListState.CategoryId;
     }
 
     public void Dispose()

@@ -2,11 +2,14 @@
 @using System.Text.Json
 @using System.Diagnostics
 @using ExilumBBS.State
+@using ExilumBBS.Models.NoDbEntity
+
 @inherits LayoutComponentBase
 @inject IUserService userService
 @inject HttpTools httpTools
 @inject NavigationManager Navigation
 @inject PostListState postListState
+@inject AppState appState
 
 <MApp>
     <MMain>
@@ -33,7 +36,7 @@
         <MNavigationDrawer @bind-Value="_drawer" Absolute Temporary>
             @if (currentUser != null)
             {
-                <MList @onclick="GoToLogin">
+                <MList>
                     <MListItem>
                         <MListItemAvatar>
 
@@ -65,7 +68,7 @@
                     <MListItem>
                         <MListItemAvatar>
 
-                            @* <MImage Src="@currentUser.Avatar"></MImage> *@
+                            <MImage Src="data:image/png;base64,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"></MImage>
 
                         </MListItemAvatar>
                     </MListItem>
@@ -76,10 +79,6 @@
                                 未登录
                             </MListItemTitle>
                         </MListItemContent>
-
-                        <MListItemAction>
-                            <MIcon>mdi-menu-down</MIcon>
-                        </MListItemAction>
                     </MListItem>
                 </MList>
             }
@@ -87,11 +86,11 @@
             <MDivider></MDivider>
             <MList Nav
                    Dense>
-                <MListItemGroup @bind-Value="_selectedItem"
+                <MListItemGroup @bind-Value="appState.CurrentMenu"
                                 Color="primary">
-                    @foreach (var item in _items)
+                    @foreach (var item in Menu.MenuItems)
                     {
-                        <MListItem @onclick="() => ChangeCategory(item.Id)">
+                        <MListItem @onclick="() => ChangeCategory(item)" Value="item.Id">
                             <MListItemIcon>
                                 <MIcon>@item.Icon</MIcon>
                             </MListItemIcon>
@@ -111,36 +110,7 @@
 {
     private bool? _drawer;
     private StringNumber? _value = default;
-    private StringNumber _selectedItem = 0;
     private UserEntity? currentUser;
-    private MenuItem[] _items = new MenuItem[]
-   {
-       new MenuItem { Text= "发现", Icon= "mdi-folder",Id=1 },
-       new MenuItem { Text= "关注", Icon= "mdi-account-multiple",Id=100 },
-       new MenuItem { Text= "休息室", Icon= "mdi-star",Id=2 },
-       new MenuItem { Text= "攻略", Icon= "mdi-history",Id=3 },
-       new MenuItem { Text= "同人", Icon= "mdi-check-circle",Id=7 },
-       new MenuItem { Text= "世界观", Icon= "mdi-upload",Id=4 },
-       new MenuItem { Text= "官方", Icon= "mdi-cloud-upload",Id=5 },
-       new MenuItem { Text= "互助厅",Icon= "mdi-cloud-upload",Id=8}
-
-   };
-
-    class MenuItem
-    {
-        public string Text { get; set; } = "";
-        public string Icon { get; set; } = "";
-        public int Id { get; set; }
-        /// <summary>
-        /// 菜单类型，预留
-        /// </summary>
-        public string Type { get; set; } = "Category";
-
-        /// <summary>
-        /// 如果不是社区分类并且是跳转到其他页面的菜单，那需要设置路由
-        /// </summary>
-        public string? Route { get; set; }
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -151,9 +121,26 @@
     /// <summary>
     /// 切换菜单项
     /// </summary>
-    private void ChangeCategory(int categoryId)
+    private void ChangeCategory(MenuItem menu)
     {
-        postListState.CategoryId = categoryId;
+        if (menu.Type == MenuType.Category)
+        {
+            postListState.CategoryId = menu.Id;
+            // 判断当前页面是否为首页，如果不是，则切换到对应页面
+            if (Navigation.Uri != "/")
+            {
+                //不是首页 返回回首页
+                Navigation.NavigateTo("/");
+            }
+        }
+        else if (menu.Type == MenuType.NewTab)
+        {
+            if (menu.Route != null)
+                Navigation.NavigateTo(menu.Route);
+        }
+
+        Debug.WriteLine(appState.CurrentMenu);
+
         _drawer = !(_drawer ?? false);
     }
 
