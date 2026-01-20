@@ -23,7 +23,7 @@ namespace ExilumBBS.Models.Response.Post
         public string? CategoryName { get; set; }
 
         [JsonPropertyName("comment_num")]
-        public string CommentNum { get; set; } = "";
+        public object? CommentNum { get; set; }
 
         [JsonPropertyName("content")]
         public string? Content { get; set; }
@@ -95,7 +95,7 @@ namespace ExilumBBS.Models.Response.Post
         public string? UserNickName { get; set; }
 
         [JsonPropertyName("view_num")]
-        public string ViewNum { get; set; } = "";
+        public object? ViewNum { get; set; }
 
         [JsonPropertyName("vip")]
         public bool Vip { get; set; }
