@@ -37,7 +37,10 @@ namespace ExilumBBS
             builder.Services.AddScoped<HttpTools>();
 
             builder.Services.AddMauiBlazorWebView();
-            builder.Services.AddMasaBlazor();
+            builder.Services.AddMasaBlazor(options =>
+            {
+                options.Locale = new Masa.Blazor.Locale("zh-CN");
+            });
 
             // 注入用户状态信息类
             builder.Services.AddSingleton<UserState>();

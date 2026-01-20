@@ -17,7 +17,7 @@ namespace ExilumBBS.Models.Response
         /// <summary>
         /// 响应信息
         /// </summary>
-        public string? Message { get; set; }
+        public string Message { get; set; } = "";
 
         /// <summary>
         /// 数据

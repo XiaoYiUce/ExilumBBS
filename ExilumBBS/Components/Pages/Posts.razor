@@ -11,6 +11,7 @@
 
 @inject HttpTools httpTools
 @inject ITokenService tokenService
+@inject IPopupService popupService
 
 @if (postInfo != null && !string.IsNullOrEmpty(postInfo.Content))
 {
@@ -150,9 +151,10 @@
             var post = response.Data.Value.Deserialize<PostInfoResponse>();
             postInfo = post;
         }
-        else
+        else if (response != null)
         {
             //此处应为获取失败后错误处理
+            await popupService.EnqueueSnackbarAsync(response.Message, AlertTypes.Error);
         }
     }
 
@@ -204,12 +206,18 @@
                 else
                 {
                     //评论获取失败后错误处理
+                    await popupService.EnqueueSnackbarAsync("操作失败", AlertTypes.Error);
                 }
 
             }
-            else
+            else if (response != null)
             {
                 //此处应为获取失败后错误处理
+                await popupService.EnqueueSnackbarAsync(response.Message, AlertTypes.Error);
+            }
+            else
+            {
+                await popupService.EnqueueSnackbarAsync("系统错误", AlertTypes.Error);
             }
         }
     }
@@ -219,20 +227,29 @@
         // 判断登录状态
         if (await tokenService.GetTokenAsync() == null)
         {
-            Debug.WriteLine("请先登录");
+            await popupService.EnqueueSnackbarAsync("请先登录", AlertTypes.Warning);
             return;
         }
 
         var response = await httpTools.GetAsync($"/community/topic/like/{postInfoResponse.TopicId}");
         if (response != null && response.Code == 0)
         {
+            if (postInfoResponse.IsLike)
+            {
+                // 再点一次是取消点赞
+                await popupService.EnqueueSnackbarAsync("取消点赞");
+            }
+            else
+            {
+                await popupService.EnqueueSnackbarAsync("点赞成功");
+            }
             Debug.WriteLine("点赞成功");
             await GetTopicInfo();
         }
         else if (response != null && response.Code == 401)
         {
             // 登录失效 需要重新登录
-            Debug.WriteLine("请重新登陆!");
+            await popupService.EnqueueSnackbarAsync("请重新登陆", AlertTypes.Warning);
         }
     }
 
@@ -247,19 +264,29 @@
         if (await tokenService.GetTokenAsync() == null)
         {
             Debug.WriteLine("请先登录");
+            await popupService.EnqueueSnackbarAsync("请先登陆", AlertTypes.Warning);
             return;
         }
 
         var response = await httpTools.GetAsync($"/community/topic/bad/{postInfoResponse.TopicId}");
         if (response != null && response.Code == 0)
         {
+            if (postInfoResponse.IsBad)
+            {
+                // 再点一次是取消点赞
+                await popupService.EnqueueSnackbarAsync("取消点踩");
+            }
+            else
+            {
+                await popupService.EnqueueSnackbarAsync("点踩成功");
+            }
             Debug.WriteLine("点踩成功");
             await GetTopicInfo();
         }
         else if (response != null && response.Code == 401)
         {
             // 登录失效 需要重新登录
-            Debug.WriteLine("请重新登陆!");
+            await popupService.EnqueueSnackbarAsync("请重新登陆", AlertTypes.Warning);
         }
     }
 

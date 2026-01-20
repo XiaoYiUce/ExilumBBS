@@ -10,6 +10,7 @@
 
 @inject ITokenService tokenService
 @inject IJSRuntime JS
+@inject IPopupService popupService
 @inject NavigationManager Navigation
 @inject PostListState postListState
 @inject UserState userState
@@ -152,6 +153,7 @@
         if (!userState.IsLogin)
         {
             Debug.WriteLine("请先登录");
+            await popupService.EnqueueSnackbarAsync("请先登录", AlertTypes.Info);
             return;
         }
 
@@ -163,12 +165,18 @@
             if (postPreview.IsLike)
             {
                 postPreview.LikeNum++;
+                await popupService.EnqueueSnackbarAsync("点赞成功");
+            }
+            else
+            {
+                await popupService.EnqueueSnackbarAsync("取消点赞");
             }
         }
         else if (response != null && response.Code == 401)
         {
             // 登录失效 需要重新登录
             Debug.WriteLine("请重新登陆!");
+            await popupService.EnqueueSnackbarAsync("请重新登录", AlertTypes.Warning);
         }
     }
     /// <summary>

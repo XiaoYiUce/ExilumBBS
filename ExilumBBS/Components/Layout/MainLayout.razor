@@ -11,6 +11,8 @@
 @inject NavigationManager Navigation
 @inject PostListState postListState
 @inject AppState appState
+@inject UserState userState
+@inject IPopupService popupService
 
 <MApp>
     <MMain>
@@ -46,9 +48,13 @@
                 </PMobilePicker>
             }
 
-            @* <MButton Icon>
-                <MIcon>mdi-dots-vertical</MIcon>
-            </MButton> *@
+            @if (userState.IsLogin)
+            {
+                <MButton Icon @onclick="SignIn">
+                    <MIcon>mdi-clipboard-check</MIcon>
+                </MButton>
+            }
+
         </MAppBar>
 
         <MNavigationDrawer @bind-Value="_drawer" Absolute Temporary>
@@ -154,6 +160,24 @@
     {
         var selectNum = int.Parse(sortFilterValue[0]);
         postListState.SortType = (SortTypeEnum)selectNum;
+    }
+
+    /// <summary>
+    /// 签到
+    /// </summary>
+    /// <returns></returns>
+    private async Task SignIn()
+    {
+        var response = await httpTools.PostAsync("/community/task/sign_in", null);
+
+        if (response != null && response.Code == 0)
+        {
+            await popupService.EnqueueSnackbarAsync("签到成功", AlertTypes.Success);
+        }
+        else if (response != null && response.Code == 30010)
+        {
+            await popupService.EnqueueSnackbarAsync(response.Message, AlertTypes.Warning);
+        }
     }
 
     /// <summary>

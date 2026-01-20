@@ -5,6 +5,8 @@
 @inject UserState userState
 @inject ITokenService tokenService
 @inject IUserService userService
+@inject IPopupService popupService
+@inject NavigationManager navigation
 
 @layout WithBackLayout
 
@@ -23,15 +25,20 @@
 
     private async Task Logout()
     {
-        if (userState.Token != null)
+        var confirmed = await popupService.ConfirmAsync("退出登录", "您确定要退出当前账户吗?", AlertTypes.Warning);
+        if (confirmed)
         {
-            await tokenService.DeleteTokenAsync(userState.Token);
-        }
+            if (userState.Token != null)
+            {
+                await tokenService.DeleteTokenAsync(userState.Token);
+            }
 
-        if (userState.CurrentUserProfile != null)
-        {
-            await userService.DeleteUserProfile(userState.CurrentUserProfile.Uid);
-        }
+            if (userState.CurrentUserProfile != null)
+            {
+                await userService.DeleteUserProfile(userState.CurrentUserProfile.Uid);
+            }
 
+            navigation.NavigateTo("/");
+        }
     }
 }

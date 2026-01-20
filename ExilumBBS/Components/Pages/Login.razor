@@ -10,6 +10,7 @@
 
 @inject HttpTools httpTools
 @inject ITokenService tokenService
+@inject IPopupService popupService
 @inject NavigationManager Navigation
 
 <MTextField @bind-Value="userName"
@@ -95,8 +96,14 @@
                 if (resData != null)
                 {
                     await tokenService.SetTokenAsync(resData.Token);
+                    await popupService.EnqueueSnackbarAsync("登录成功", AlertTypes.Success);
+                    await Task.Delay(1000);
                     Navigation.NavigateTo("/");
                 }
+            }
+            else if (response != null && response.Code == -1)
+            {
+                popupService.ShowErrorToast("用户名或密码错误");
             }
         }
     }

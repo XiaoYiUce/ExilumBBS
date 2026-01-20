@@ -5,6 +5,7 @@
 
 @inject HttpTools httpTools
 @inject UserState userState
+@inject IPopupService popupService
 
 <MList dense>
     @if (Comments != null && Comments.Count > 0)
@@ -101,6 +102,7 @@
         if (!userState.IsLogin)
         {
             Debug.WriteLine("请先登录!");
+            await popupService.EnqueueSnackbarAsync("请先登录", AlertTypes.Warning);
         }
 
         var response = await httpTools.PostAsync("/community/comment/like", new { comment_id = comment.CommentId, topic_id = TopicId });
@@ -112,10 +114,12 @@
             if (comment.IsLike)
             {
                 comment.LikeNum++;
+                await popupService.EnqueueSnackbarAsync("点赞成功");
             }
             else
             {
                 comment.LikeNum--;
+                await popupService.EnqueueSnackbarAsync("取消点赞");
             }
 
             if (comment.IsDislike)
@@ -127,6 +131,7 @@
         else if (response != null && response.Code == 401)
         {
             Debug.WriteLine("请先重新登录!");
+            await popupService.EnqueueSnackbarAsync("请重新登陆", AlertTypes.Warning);
         }
     }
 
@@ -134,7 +139,7 @@
     {
         if (!userState.IsLogin)
         {
-            Debug.WriteLine("请先登录!");
+            await popupService.EnqueueSnackbarAsync("请先登录", AlertTypes.Warning);
         }
 
         var response = await httpTools.PostAsync("/community/comment/bad", new { comment_id = comment.CommentId, topic_id = TopicId });
@@ -142,6 +147,15 @@
         if (response != null && response.Code == 0)
         {
             comment.IsDislike = !comment.IsDislike;
+
+            if (comment.IsDislike)
+            {
+                await popupService.EnqueueSnackbarAsync("点踩成功");
+            }
+            else
+            {
+                await popupService.EnqueueSnackbarAsync("取消点踩");
+            }
 
             if (comment.IsLike)
             {
@@ -152,6 +166,7 @@
         else if (response != null && response.Code == 401)
         {
             Debug.WriteLine("请先重新登录!");
+            await popupService.EnqueueSnackbarAsync("请重新登陆", AlertTypes.Warning);
         }
     }
 }
