@@ -11,5 +11,7 @@ namespace ExilumBBS.State
         /// 当前选中菜单项
         /// </summary>
         public StringNumber CurrentMenu { get; set; } = 1;
+
+        public WithbackLayoutState WithbackLayoutState { get; set; } = new();
     }
 }

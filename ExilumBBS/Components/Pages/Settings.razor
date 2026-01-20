@@ -1,9 +1,20 @@
 ﻿@page "/settings"
+@using ExilumBBS.State
 
-@layout SettingLayout
+@inject AppState appState
 
-<h3>设置</h3>
+@layout WithBackLayout
+
+<MCellGroup>
+    <MCell Title="退出登录" Href="/blazor/mobiles/cell#listen"></MCell>
+</MCellGroup>
+
 
 @code {
-
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        // 设置AppBar标题
+        appState.WithbackLayoutState.AppBarTitle = "设置";
+    }
 }

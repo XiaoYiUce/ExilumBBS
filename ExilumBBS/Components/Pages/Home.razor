@@ -133,6 +133,7 @@
     {
 #if DEBUG
             Debug.WriteLine("触底加载");
+            Debug.WriteLine($"sortType:{(int)postListState.SortType}");
 #endif
         var result = await httpTools.GetAsync($"/community/topic/list?sort_type={(int)postListState.SortType}&category_id={postListState.CategoryId}&query_type={postListState.QueryType}&last_tid={LastTid}&pub_time={PubTime}&reply_time={ReplyTime}&hot_value={HotValue}");
 
@@ -190,6 +191,13 @@
         TopPostPreviews = [];
         PostList = [];
 
+        // 将分页状态恢复到初始状态
+        LastTid = 0;
+        PubTime = 0;
+        ReplyTime = 0;
+        HotValue = 0;
+        NextPage = true;
+
         //页面拉回顶部
         await JS.InvokeVoidAsync("eval",
                "document.getElementById('infinite-scroll-usage').scrollTop = 0;");
@@ -210,14 +218,24 @@
         Debug.WriteLine("Home初始化");
     }
 
+    /// <summary>
+    /// 渲染完成后执行
+    /// </summary>
+    /// <param name="firstRender"></param>
+    /// <returns></returns>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+
+        // 位于首页时，本质上切换分类选项卡都是在同一页面进行，并且此时CategoryId=MenuId
         appState.CurrentMenu = postListState.CategoryId;
     }
 
     public void Dispose()
     {
+        // 释放状态机监听
         postListState.PropertyChanged -= OnStateChanged;
+
+        // 预留:在退出首页前对当前页面状态进行缓存，方便回到当前页之后恢复之前的浏览状态
     }
 }

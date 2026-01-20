@@ -1,5 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using ExilumBBS.State
+@inherits LayoutComponentBase
 @inject IJSRuntime JS
+
+@inject AppState appState
 
 <MApp>
     <MMain>
@@ -7,8 +10,7 @@
             <MButton Icon OnClick='() => JS.InvokeVoidAsync("history.back")'>
                 <MIcon>mdi-arrow-left</MIcon>
             </MButton>
-
-            <MToolbarTitle>设置</MToolbarTitle>
+            <MToolbarTitle>@appState.WithbackLayoutState.AppBarTitle</MToolbarTitle>
         </MAppBar>
         @Body
     </MMain>

@@ -3,6 +3,7 @@
 @using System.Diagnostics
 @using ExilumBBS.State
 @using ExilumBBS.Models.NoDbEntity
+@using Masa.Blazor.Presets
 
 @inherits LayoutComponentBase
 @inject IUserService userService
@@ -24,13 +25,27 @@
                 <MIcon>mdi-magnify</MIcon>
             </MButton>
 
-            <MButton Icon>
-                <MIcon>mdi-filter</MIcon>
-            </MButton>
+            <PMobilePicker @bind-Value="sortFilterValue"
+                           @bind-Value:after="SortFilterChange"
+                           Columns="@Columns"
+                           TColumn="Data"
+                           TColumnItem="Data"
+                           TColumnItemValue="string"
+                           ItemValue="item => item.SortType.ToString()"
+                           ItemText="item => item.Name"
+                           ItemChildren="item => item.Children"
+                           ItemDisabled="item => item.Disabled">
 
-            <MButton Icon>
+                <ActivatorContent>
+                    <MButton Icon @attributes="@context.Attrs">
+                        <MIcon>mdi-filter</MIcon>
+                    </MButton>
+                </ActivatorContent>
+            </PMobilePicker>
+
+            @* <MButton Icon>
                 <MIcon>mdi-dots-vertical</MIcon>
-            </MButton>
+            </MButton> *@
         </MAppBar>
 
         <MNavigationDrawer @bind-Value="_drawer" Absolute Temporary>
@@ -103,6 +118,7 @@
                 </MListItemGroup>
             </MList>
         </MNavigationDrawer>
+
         @Body
     </MMain>
 </MApp>
@@ -111,11 +127,30 @@
     private bool? _drawer;
     private StringNumber? _value = default;
     private UserEntity? currentUser;
+    private List<string> sortFilterValue = [];
+
+    record Data(int SortType, string Name, List<Data>? Children = null, bool Disabled = false);
+
+    static readonly List<Data> Columns = new()
+    {
+        new Data((int)SortTypeEnum.NEWREPORT, "最新回复", null),
+        new Data((int)SortTypeEnum.NEWPUBLISH, "最新发布",null),
+        new Data((int)SortTypeEnum.HOTTEST, "热度", null)
+    };
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         await GetUserProfile();
+    }
+
+    /// <summary>
+    /// 排序筛选器变化
+    /// </summary>
+    private void SortFilterChange()
+    {
+        var selectNum = int.Parse(sortFilterValue[0]);
+        postListState.SortType = (SortTypeEnum)selectNum;
     }
 
     /// <summary>
