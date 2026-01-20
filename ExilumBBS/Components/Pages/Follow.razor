@@ -121,8 +121,8 @@
     private async Task<List<PostPreview>> PostLoad()
     {
 #if DEBUG
-            Debug.WriteLine("触底加载");
-            Debug.WriteLine($"sortType:{(int)postListState.SortType}");
+    Debug.WriteLine("触底加载");
+    Debug.WriteLine($"sortType:{(int)postListState.SortType}");
 #endif
         var result = await httpTools.GetAsync($"/community/topic/list?sort_type=1&category_id=100&query_type=3&last_tid={LastTid}&pub_time={PubTime}&reply_time={ReplyTime}&hot_value={HotValue}");
 
@@ -149,38 +149,16 @@
 
     }
 
-    /// <summary>
-    /// 状态机变化时触发
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private async void OnStateChanged(object? sender, PropertyChangedEventArgs e)
+    protected override async Task OnParametersSetAsync()
     {
-        // 首先清空原来的帖子列表
-        PostList = [];
-
-        // 将分页状态恢复到初始状态
-        LastTid = 0;
-        PubTime = 0;
-        ReplyTime = 0;
-        HotValue = 0;
-        NextPage = true;
-
-        //页面拉回顶部
-        await JS.InvokeVoidAsync("eval",
-               "document.getElementById('infinite-scroll-usage').scrollTop = 0;");
-
-        // 重新加载公告以及帖子
-        await PostLoad();
-
-        //触发 UI 刷新
-        await InvokeAsync(StateHasChanged);
+        await base.OnParametersSetAsync();
     }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        postListState.PropertyChanged += OnStateChanged;
+        appState.MainLayoutState.AppBarTitle = "关注";
+        appState.MainLayoutState.FilterVisable = false;
     }
 
     /// <summary>
@@ -199,7 +177,7 @@
     public void Dispose()
     {
         // 释放状态机监听
-        postListState.PropertyChanged -= OnStateChanged;
+        // postListState.PropertyChanged -= OnStateChanged;
 
         // 预留:在退出首页前对当前页面状态进行缓存，方便回到当前页之后恢复之前的浏览状态
     }

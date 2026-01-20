@@ -12,6 +12,14 @@ namespace ExilumBBS.State
         /// </summary>
         public StringNumber CurrentMenu { get; set; } = 1;
 
+        /// <summary>
+        /// WithbackLayout状态缓存
+        /// </summary>
         public WithbackLayoutState WithbackLayoutState { get; set; } = new();
+
+        /// <summary>
+        /// MainLayout状态缓存
+        /// </summary>
+        public MainLayoutState MainLayoutState { get; set; } = new();
     }
 }

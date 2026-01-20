@@ -17,7 +17,7 @@
         <MAppBar>
             <MAppBarNavIcon @onclick="() => _drawer = !(_drawer ?? false)"></MAppBarNavIcon>
 
-            <MToolbarTitle onclick="">追放社区</MToolbarTitle>
+            <MToolbarTitle onclick="">@appState.MainLayoutState.AppBarTitle</MToolbarTitle>
 
             <MSpacer></MSpacer>
 
@@ -25,23 +25,26 @@
                 <MIcon>mdi-magnify</MIcon>
             </MButton>
 
-            <PMobilePicker @bind-Value="sortFilterValue"
-                           @bind-Value:after="SortFilterChange"
-                           Columns="@Columns"
-                           TColumn="Data"
-                           TColumnItem="Data"
-                           TColumnItemValue="string"
-                           ItemValue="item => item.SortType.ToString()"
-                           ItemText="item => item.Name"
-                           ItemChildren="item => item.Children"
-                           ItemDisabled="item => item.Disabled">
+            @if (appState.MainLayoutState.FilterVisable)
+            {
+                <PMobilePicker @bind-Value="sortFilterValue"
+                               @bind-Value:after="SortFilterChange"
+                               Columns="@Columns"
+                               TColumn="Data"
+                               TColumnItem="Data"
+                               TColumnItemValue="string"
+                               ItemValue="item => item.SortType.ToString()"
+                               ItemText="item => item.Name"
+                               ItemChildren="item => item.Children"
+                               ItemDisabled="item => item.Disabled">
 
-                <ActivatorContent>
-                    <MButton Icon @attributes="@context.Attrs">
-                        <MIcon>mdi-filter</MIcon>
-                    </MButton>
-                </ActivatorContent>
-            </PMobilePicker>
+                    <ActivatorContent>
+                        <MButton Icon @attributes="@context.Attrs">
+                            <MIcon>mdi-filter</MIcon>
+                        </MButton>
+                    </ActivatorContent>
+                </PMobilePicker>
+            }
 
             @* <MButton Icon>
                 <MIcon>mdi-dots-vertical</MIcon>

@@ -84,6 +84,22 @@
     private long ReplyTime = 0;
     private long HotValue = 0;
 
+    class Category
+    {
+        public string CategoryName { get; set; } = "";
+        public int CategoryId { get; set; }
+    }
+
+    List<Category> categoryList = [
+            new Category{ CategoryName= "发现",CategoryId=1 },
+            new Category { CategoryName= "休息室",CategoryId=2 },
+            new Category { CategoryName= "攻略",CategoryId=3 },
+            new Category { CategoryName= "同人",CategoryId=7 },
+            new Category { CategoryName= "世界观",CategoryId=4 },
+            new Category { CategoryName= "官方",CategoryId=5 },
+            new Category { CategoryName= "互助厅",CategoryId=8},
+    ];
+
     /// <summary>
     /// 切换帖子点赞状态
     /// </summary>
@@ -132,8 +148,8 @@
     private async Task<List<PostPreview>> PostLoad()
     {
 #if DEBUG
-            Debug.WriteLine("触底加载");
-            Debug.WriteLine($"sortType:{(int)postListState.SortType}");
+    Debug.WriteLine("触底加载");
+    Debug.WriteLine($"sortType:{(int)postListState.SortType}");
 #endif
         var result = await httpTools.GetAsync($"/community/topic/list?sort_type={(int)postListState.SortType}&category_id={postListState.CategoryId}&query_type={postListState.QueryType}&last_tid={LastTid}&pub_time={PubTime}&reply_time={ReplyTime}&hot_value={HotValue}");
 
@@ -213,9 +229,20 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        appState.MainLayoutState.FilterVisable = true;
+        var bartitle = categoryList.Where(it => it.CategoryId == postListState.CategoryId)
+        .First().CategoryName;
+
+        appState.MainLayoutState.AppBarTitle = bartitle;
         postListState.PropertyChanged += OnStateChanged;
         await PostTop();
         Debug.WriteLine("Home初始化");
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        Debug.WriteLine("onparameter");
     }
 
     /// <summary>
