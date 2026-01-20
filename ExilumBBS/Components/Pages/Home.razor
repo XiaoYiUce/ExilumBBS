@@ -32,29 +32,45 @@
         <MSubheader>帖子</MSubheader>
         @foreach (var item in PostList)
         {
-            <MListItem Href="@($"/post/{item.TopicId}")">
-                <MListItemAvatar>
-                    <MImage Src="@item.UserAvatar"></MImage>
-                </MListItemAvatar>
-                <MListItemContent>
-                    <MListItemTitle>@item.Title</MListItemTitle>
-                    <MListItemSubtitle>@item.Content</MListItemSubtitle>
-                </MListItemContent>
+            <MListItem OnClick="() => ToTopic(item.TopicId)">
+                <div class="home-list">
+                    <div class="home-list-user">
+                        <MListItemAvatar>
+                            <MImage Src="@item.UserAvatar"></MImage>
+                        </MListItemAvatar>
+                        <MListItemContent>
+                            <MListItemTitle>
+                                @item.UserNickName
+                                <MChip Color="primary" Small>
+                                    @($"LV{item.UserLevel}")
+                                </MChip>
+                            </MListItemTitle>
+                            <MListItemSubtitle>@item.CreateTime</MListItemSubtitle>
+                        </MListItemContent>
+                    </div>
+                    <div class="home-list-content text-truncate">
+                        <div class="home-list-content-title">
+                            @item.Title
+                        </div>
+                        <div class="home-list-content-content text-truncate">
+                            @item.Content
+                        </div>
+                    </div>
+                    <div class="d-flex align-center" @onclick:stopPropagation>
+                        <div class="ml-2">
+                            <MIcon Color="default">mdi-comment-outline</MIcon>
+                            <span class="text-caption text--secondary ml-1">@item.CommentNum</span>
+                        </div>
+                        <div class="ml-2">
+                            <MButton Color="@(item.IsLike ? "primary" : "default")" Icon Size="small" OnClick="() => ToggleLike(item)">
+                                <MIcon>@(item.IsLike ? "mdi-thumb-up" : "mdi-thumb-up-outline")</MIcon>
+                            </MButton>
+                        </div>
+                        <span class="text-caption text--secondary ml-1">@item.LikeNum</span>
+                    </div>
+                </div>
             </MListItem>
-            <div class="d-flex align-center ml-4">
-                <div class="ml-2">
-                    <MIcon Color="default">mdi-comment-outline</MIcon>
-                    <span class="text-caption text--secondary ml-1">@item.CommentNum</span>
-                </div>
-                <div class="ml-2">
-                    <MButton Color="@(item.IsLike ? "primary" : "default")" Icon Size="small" OnClick="() => ToggleLike(item)">
-                        <MIcon>@(item.IsLike ? "mdi-thumb-up" : "mdi-thumb-up-outline")</MIcon>
-                    </MButton>
 
-                    <span class="text-caption text--secondary ml-1">@item.LikeNum</span>
-                </div>
-
-            </div>
             <MDivider></MDivider>
         }
     </MList>
@@ -62,6 +78,18 @@
                      Parent="#infinite-scroll-usage">
     </MInfiniteScroll>
 </MCard>
+
+<style>
+    .home-list {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .home-list-user {
+        display: flex
+    }
+</style>
 
 
 @code {
@@ -99,6 +127,11 @@
             new Category { CategoryName= "官方",CategoryId=5 },
             new Category { CategoryName= "互助厅",CategoryId=8},
     ];
+
+    private void ToTopic(long topicId)
+    {
+        Navigation.NavigateTo($"/post/{topicId}");
+    }
 
     /// <summary>
     /// 切换帖子点赞状态

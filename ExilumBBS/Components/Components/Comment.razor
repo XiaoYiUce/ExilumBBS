@@ -19,14 +19,14 @@
                             <MImage Src="@comment.UserAvatar"></MImage>
                         </MAvatar>
                         <span class="font-weight-medium">@comment.UserNickName</span>
-                        <MChip Size="x-small"
+                        <MChip Small
                                Class="ml-2"
                                Color="primary">
                             @($"LV{comment.UserLevel}")
                         </MChip>
                         @if (comment.IsAuthor)
                         {
-                            <MChip Size="x-small"
+                            <MChip Small
                                    Class="ml-2"
                                    Color="primary">
                                 楼主
@@ -37,9 +37,12 @@
                         </span>
                     </MListItemTitle>
 
+                    @*评论主体部分*@
                     <div class="mt-2 text-sm-body-2">
                         @((MarkupString)comment.Content)
                     </div>
+
+                    @*评论回复部分*@
 
 
                     <div class="d-flex align-center">
@@ -74,6 +77,17 @@
     }
 
 </MList>
+
+<style>
+    .emoji {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    img {
+        max-width: 100%;
+    }
+</style>
 
 @code {
     [Parameter]
