@@ -1,5 +1,10 @@
 ﻿@using System.Globalization
 @using ExilumBBS.Models.Response.Post
+@using ExilumBBS.State
+@using System.Diagnostics
+
+@inject HttpTools httpTools
+@inject UserState userState
 
 <MList dense>
     @if (Comments != null && Comments.Count > 0)
@@ -52,7 +57,6 @@
                                  OnClick="() => ToggleDisLike(comment)">
                             <MIcon>@(comment.IsDislike ? "mdi-thumb-down" : "mdi-thumb-down-outline")</MIcon>
                         </MButton>
-                        <span class="text-caption text--secondary ml-1">@comment.DislikeNum</span>
 
                         <MButton Text
                                  Size="small"
@@ -75,33 +79,65 @@
     [Parameter]
     public List<CommentResponse>? Comments { get; set; }
 
-    public async Task<bool> ToggleLike(CommentResponse comment)
+    [Parameter]
+    public long TopicId { get; set; }
+
+    public async Task ToggleLike(CommentResponse comment)
     {
-        if (comment.IsLike == false)
+        if (!userState.IsLogin)
         {
-            comment.IsLike = true;
-            comment.IsDislike = false;
-        }
-        else
-        {
-            comment.IsLike = false;
-            comment.IsDislike = true;
+            Debug.WriteLine("请先登录!");
         }
 
-        return true;
+        var response = await httpTools.PostAsync("/community/comment/like", new { comment_id = comment.CommentId, topic_id = TopicId });
+
+        if (response != null && response.Code == 0)
+        {
+            comment.IsLike = !comment.IsLike;
+
+            if (comment.IsLike)
+            {
+                comment.LikeNum++;
+            }
+            else
+            {
+                comment.LikeNum--;
+            }
+
+            if (comment.IsDislike)
+            {
+                comment.IsDislike = false;
+                comment.DislikeNum--;
+            }
+        }
+        else if (response != null && response.Code == 401)
+        {
+            Debug.WriteLine("请先重新登录!");
+        }
     }
 
-    public async Task<bool> ToggleDisLike(CommentResponse comment)
+    public async Task ToggleDisLike(CommentResponse comment)
     {
-        if (comment.IsDislike == true)
+        if (!userState.IsLogin)
         {
-            comment.IsDislike = false;
-        }
-        else
-        {
-            comment.IsDislike = true;
+            Debug.WriteLine("请先登录!");
         }
 
-        return true;
+        var response = await httpTools.PostAsync("/community/comment/bad", new { comment_id = comment.CommentId, topic_id = TopicId });
+
+        if (response != null && response.Code == 0)
+        {
+            comment.IsDislike = !comment.IsDislike;
+
+            if (comment.IsLike)
+            {
+                comment.IsLike = false;
+                comment.LikeNum--;
+            }
+        }
+        else if (response != null && response.Code == 401)
+        {
+            Debug.WriteLine("请先重新登录!");
+        }
     }
 }

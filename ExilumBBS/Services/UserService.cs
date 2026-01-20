@@ -28,6 +28,11 @@ namespace ExilumBBS.Services
             throw new NotImplementedException();
         }
 
+        public UserEntity GetUserProfile()
+        {
+            return userDb.AsQueryable().First();
+        }
+
         /// <summary>
         /// 获取用户配置文件
         /// </summary>

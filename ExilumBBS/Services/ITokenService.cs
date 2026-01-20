@@ -16,7 +16,9 @@ namespace ExilumBBS.Services
         /// 获取Token值
         /// </summary>
         /// <returns></returns>
-        public Task<string?> GetToken();
+        public Task<string?> GetTokenAsync();
+
+        public string? GetToken();
 
         /// <summary>
         /// 删除Token

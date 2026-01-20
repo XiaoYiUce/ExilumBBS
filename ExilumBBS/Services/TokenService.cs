@@ -22,7 +22,7 @@ namespace ExilumBBS.Services
         /// 获取Token值
         /// </summary>
         /// <returns></returns>
-        public async Task<string?> GetToken()
+        public async Task<string?> GetTokenAsync()
         {
             var result = await tokenDb.AsQueryable().FirstAsync();
 
@@ -41,6 +41,21 @@ namespace ExilumBBS.Services
         public async Task SetTokenAsync(string token)
         {
             await tokenDb.InsertAsync(new TokenEntity() { TokenValue = token });
+        }
+
+        /// <summary>
+        /// 获取Token值，非Async方法
+        /// </summary>
+        /// <returns></returns>
+        public string? GetToken()
+        {
+            var result = tokenDb.AsQueryable().First();
+            if (result != null)
+            {
+                return result.TokenValue;
+            }
+
+            return null;
         }
     }
 }

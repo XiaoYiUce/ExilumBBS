@@ -60,7 +60,6 @@
                                  OnClick="() => ToggleTopicBad(postInfo)">
                             <MIcon>@(postInfo.IsBad ? "mdi-thumb-down" : "mdi-thumb-down-outline")</MIcon>
                         </MButton>
-                        <span class="text-caption text--secondary ml-1">@postInfo.BadNum</span>
 
                         <MButton Text
                                  Size="small"
@@ -79,7 +78,7 @@
         <MSubheader>评论(@postInfo.CommentNum)</MSubheader>
         @if (commentList.Count > 0)
         {
-            <Comment Comments="commentList">
+            <Comment Comments="commentList" TopicId="Id">
 
             </Comment>
         }
@@ -211,7 +210,7 @@
     private async Task ToggleTopicLike(PostInfoResponse postInfoResponse)
     {
         // 判断登录状态
-        if (await tokenService.GetToken() == null)
+        if (await tokenService.GetTokenAsync() == null)
         {
             Debug.WriteLine("请先登录");
             return;
@@ -222,11 +221,6 @@
         {
             Debug.WriteLine("点赞成功");
             await GetTopicInfo();
-            // postInfoResponse.IsLike = postInfoResponse.IsLike == true ? false : true;
-            // if (postInfoResponse.IsBad == true)
-            // {
-            //     postInfoResponse.IsBad = false;
-            // }
         }
         else if (response != null && response.Code == 401)
         {
@@ -243,7 +237,7 @@
     private async Task ToggleTopicBad(PostInfoResponse postInfoResponse)
     {
         // 判断登录状态
-        if (await tokenService.GetToken() == null)
+        if (await tokenService.GetTokenAsync() == null)
         {
             Debug.WriteLine("请先登录");
             return;
@@ -254,11 +248,6 @@
         {
             Debug.WriteLine("点踩成功");
             await GetTopicInfo();
-            // postInfoResponse.IsLike = postInfoResponse.IsLike == true ? false : true;
-            // if (postInfoResponse.IsBad == true)
-            // {
-            //     postInfoResponse.IsBad = false;
-            // }
         }
         else if (response != null && response.Code == 401)
         {

@@ -39,6 +39,8 @@ namespace ExilumBBS
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddMasaBlazor();
 
+            // 注入用户状态信息类
+            builder.Services.AddSingleton<UserState>();
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();

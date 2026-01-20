@@ -9,10 +9,11 @@
 @using System.Threading.Tasks
 
 @inject ITokenService tokenService
-@inject HttpTools httpTools
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
 @inject PostListState postListState
+@inject UserState userState
+@inject HttpTools httpTools
 
 <MCard Height="775"
        Class="overflow-auto"
@@ -88,7 +89,7 @@
     private async Task ToggleLike(PostPreview postPreview)
     {
         // 判断登录状态
-        if (await tokenService.GetToken() == null)
+        if (!userState.IsLogin)
         {
             Debug.WriteLine("请先登录");
             return;
@@ -99,6 +100,10 @@
         {
             Debug.WriteLine("点赞成功");
             postPreview.IsLike = postPreview.IsLike == true ? false : true;
+            if (postPreview.IsLike)
+            {
+                postPreview.LikeNum++;
+            }
         }
         else if (response != null && response.Code == 401)
         {

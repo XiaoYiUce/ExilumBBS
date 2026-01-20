@@ -8,6 +8,7 @@ namespace ExilumBBS.Services
     public interface IUserService
     {
         public Task<UserEntity> GetUserProfileAsync();
+        public UserEntity GetUserProfile();
         public Task CreateOrUpdateUserProfile(UserEntity user);
 
         /// <summary>

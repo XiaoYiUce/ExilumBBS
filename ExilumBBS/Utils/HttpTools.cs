@@ -40,7 +40,7 @@ namespace ExilumBBS.Utils
             var token = "";
             if (noToken == false)
             {
-                token = await _tokenService.GetToken();
+                token = await _tokenService.GetTokenAsync();
                 if (token != null)
                 {
                     _httpClient.DefaultRequestHeaders.Add("Authorization", token);
@@ -81,7 +81,7 @@ namespace ExilumBBS.Utils
             var token = "";
             if (noToken == false)
             {
-                token = await _tokenService.GetToken();
+                token = await _tokenService.GetTokenAsync();
                 if (token != null)
                 {
                     _httpClient.DefaultRequestHeaders.Add("Authorization", token);
