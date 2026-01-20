@@ -8,7 +8,7 @@ namespace ExilumBBS.Models.Response.Post
     public class PostInfoResponse
     {
         [JsonPropertyName("author_comment_num")]
-        public int AuthorCommentNum { get; set; }
+        public long AuthorCommentNum { get; set; }
 
         [JsonPropertyName("avatar_frame")]
         public string? AvatarFrame { get; set; }
@@ -23,7 +23,7 @@ namespace ExilumBBS.Models.Response.Post
         public string? CategoryName { get; set; }
 
         [JsonPropertyName("comment_num")]
-        public int CommentNum { get; set; }
+        public string CommentNum { get; set; } = "";
 
         [JsonPropertyName("content")]
         public string? Content { get; set; }
@@ -95,7 +95,7 @@ namespace ExilumBBS.Models.Response.Post
         public string? UserNickName { get; set; }
 
         [JsonPropertyName("view_num")]
-        public int ViewNum { get; set; }
+        public string ViewNum { get; set; } = "";
 
         [JsonPropertyName("vip")]
         public bool Vip { get; set; }

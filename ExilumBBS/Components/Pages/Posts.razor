@@ -134,14 +134,6 @@
         {
             var post = response.Data.Value.Deserialize<PostInfoResponse>();
             postInfo = post;
-            if (postInfo != null && postInfo.CommentNum < 1)
-            {
-                NextPage = false;
-            }
-            else if (postInfo == null)
-            {
-                NextPage = false;
-            }
         }
         else
         {

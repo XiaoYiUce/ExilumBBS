@@ -21,7 +21,7 @@ namespace ExilumBBS.Models.DTO
 
         [JsonPropertyName("comment_num")]
 
-        public int CommentNum { get; set; }
+        public long CommentNum { get; set; }
 
 
         [JsonPropertyName("content")]

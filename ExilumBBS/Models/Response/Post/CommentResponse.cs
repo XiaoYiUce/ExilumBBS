@@ -14,7 +14,7 @@ namespace ExilumBBS.Models.Response.Post
         public long CommentId { get; set; }
 
         [JsonPropertyName("comment_reply")]
-        public List<CommentResponse> CommentReply { get; set; } = new();
+        public List<CommentWithReplyToResponse>? CommentReply { get; set; }
 
         [JsonPropertyName("content")]
         public string Content { get; set; } = string.Empty;
