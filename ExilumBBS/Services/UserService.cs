@@ -21,11 +21,10 @@ namespace ExilumBBS.Services
         /// <summary>
         /// 删除指定UID的用户信息
         /// </summary>
-        /// <param name="uid"></param>
         /// <returns></returns>
-        public Task DeleteUserProfile(long uid)
+        public async Task DeleteUserProfile(long uid)
         {
-            throw new NotImplementedException();
+            await userDb.AsDeleteable().Where(u => u.Uid == uid).ExecuteCommandAsync();
         }
 
         public UserEntity GetUserProfile()

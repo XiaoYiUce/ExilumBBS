@@ -2,11 +2,14 @@
 @using ExilumBBS.State
 
 @inject AppState appState
+@inject UserState userState
+@inject ITokenService tokenService
+@inject IUserService userService
 
 @layout WithBackLayout
 
 <MCellGroup>
-    <MCell Title="退出登录" Href="/blazor/mobiles/cell#listen"></MCell>
+    <MCell Title="退出登录" OnClick="Logout"></MCell>
 </MCellGroup>
 
 
@@ -16,5 +19,19 @@
         await base.OnParametersSetAsync();
         // 设置AppBar标题
         appState.WithbackLayoutState.AppBarTitle = "设置";
+    }
+
+    private async Task Logout()
+    {
+        if (userState.Token != null)
+        {
+            await tokenService.DeleteTokenAsync(userState.Token);
+        }
+
+        if (userState.CurrentUserProfile != null)
+        {
+            await userService.DeleteUserProfile(userState.CurrentUserProfile.Uid);
+        }
+
     }
 }

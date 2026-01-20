@@ -20,5 +20,10 @@ namespace ExilumBBS.State
         /// 当前用户信息
         /// </summary>
         public UserEntity? CurrentUserProfile => user.GetUserProfile();
+
+        /// <summary>
+        /// Token
+        /// </summary>
+        public string? Token => token.GetToken();
     }
 }

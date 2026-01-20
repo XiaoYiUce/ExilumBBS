@@ -24,6 +24,6 @@ namespace ExilumBBS.Services
         /// 删除Token
         /// </summary>
         /// <returns></returns>
-        public Task DeleteToken();
+        public Task DeleteTokenAsync(string tokenValue);
     }
 }

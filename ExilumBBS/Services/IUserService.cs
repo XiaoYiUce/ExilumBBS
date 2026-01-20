@@ -12,9 +12,8 @@ namespace ExilumBBS.Services
         public Task CreateOrUpdateUserProfile(UserEntity user);
 
         /// <summary>
-        /// 删除指定UID的用户信息
+        /// 删除用户信息
         /// </summary>
-        /// <param name="uid"></param>
         /// <returns></returns>
         public Task DeleteUserProfile(long uid);
     }
