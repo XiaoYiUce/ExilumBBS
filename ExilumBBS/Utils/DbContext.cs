@@ -27,7 +27,8 @@ namespace ExilumBBS.Utils
                         MoreSettings = new ConnMoreSettings()
                                        {
                                            //禁止删列，正式版必须开启，避免修改表时错误删除列
-                                           SqliteCodeFirstEnableDropColumn = false
+                                           SqliteCodeFirstEnableDropColumn = false,
+                                           IsNoReadXmlDescription=true
                                        },
                         ConfigureExternalServices =
                             new ConfigureExternalServices
