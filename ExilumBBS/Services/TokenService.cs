@@ -12,9 +12,10 @@ namespace ExilumBBS.Services
         /// 删除Token
         /// </summary>
         /// <returns></returns>
-        public Task DeleteToken()
+        public async Task DeleteToken()
         {
-            throw new NotImplementedException();
+            // 暂时不考虑多用户登录 先全部清空
+            await tokenDb.AsDeleteable().SelectAll().ExecuteCommandAsync();
         }
 
         /// <summary>

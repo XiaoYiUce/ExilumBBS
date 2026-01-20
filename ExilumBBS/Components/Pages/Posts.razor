@@ -10,6 +10,8 @@
 @using ExilumBBS.Models.Response.Post
 
 @inject HttpTools httpTools
+@inject ITokenService tokenService
+
 @if (postInfo != null && !string.IsNullOrEmpty(postInfo.Content))
 {
 
@@ -43,11 +45,11 @@
 
                     @((MarkupString)postInfo.Content)
 
-                    <div class="d-flex align-center mt-2 ml-2 mb-2">
+                    <div class="d-flex align-center mt-2 mb-2">
                         <MButton Icon
                                  Size="small"
                                  Color="@(postInfo.IsLike ? "primary" : "default")"
-                                 OnClick="() => {}">
+                                 OnClick="() => ToggleTopicLike(postInfo)">
                             <MIcon>@(postInfo.IsLike ? "mdi-thumb-up" : "mdi-thumb-up-outline")</MIcon>
                         </MButton>
                         <span class="text-caption text--secondary ml-1">@postInfo.LikeNum</span>
@@ -55,7 +57,7 @@
                         <MButton Icon
                                  Size="small"
                                  Color="@(postInfo.IsBad ? "primary" : "default")"
-                                 OnClick="() => {}">
+                                 OnClick="() => ToggleTopicBad(postInfo)">
                             <MIcon>@(postInfo.IsBad ? "mdi-thumb-down" : "mdi-thumb-down-outline")</MIcon>
                         </MButton>
                         <span class="text-caption text--secondary ml-1">@postInfo.BadNum</span>
@@ -148,12 +150,21 @@
         }
     }
 
+    /// <summary>
+    /// 触底加载
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
     private async Task CommentOnLoad(InfiniteScrollLoadEventArgs args)
     {
         await PostTopicCommentList();
         args.Status = NextPage == false ? InfiniteScrollLoadStatus.Empty : InfiniteScrollLoadStatus.Ok;
     }
 
+    /// <summary>
+    /// 获取帖子评论
+    /// </summary>
+    /// <returns></returns>
     private async Task PostTopicCommentList()
     {
         Debug.WriteLine($"获取帖子{Id}的评论");
@@ -197,15 +208,64 @@
         }
     }
 
-    // private async Task ToggleLike()
-    // {
+    private async Task ToggleTopicLike(PostInfoResponse postInfoResponse)
+    {
+        // 判断登录状态
+        if (await tokenService.GetToken() == null)
+        {
+            Debug.WriteLine("请先登录");
+            return;
+        }
 
-    // }
+        var response = await httpTools.GetAsync($"/community/topic/like/{postInfoResponse.TopicId}");
+        if (response != null && response.Code == 0)
+        {
+            Debug.WriteLine("点赞成功");
+            await GetTopicInfo();
+            // postInfoResponse.IsLike = postInfoResponse.IsLike == true ? false : true;
+            // if (postInfoResponse.IsBad == true)
+            // {
+            //     postInfoResponse.IsBad = false;
+            // }
+        }
+        else if (response != null && response.Code == 401)
+        {
+            // 登录失效 需要重新登录
+            Debug.WriteLine("请重新登陆!");
+        }
+    }
 
-    // private Task ToggleBad()
-    // {
+    /// <summary>
+    /// 点踩
+    /// </summary>
+    /// <param name="postInfoResponse"></param>
+    /// <returns></returns>
+    private async Task ToggleTopicBad(PostInfoResponse postInfoResponse)
+    {
+        // 判断登录状态
+        if (await tokenService.GetToken() == null)
+        {
+            Debug.WriteLine("请先登录");
+            return;
+        }
 
-    // }
+        var response = await httpTools.GetAsync($"/community/topic/bad/{postInfoResponse.TopicId}");
+        if (response != null && response.Code == 0)
+        {
+            Debug.WriteLine("点踩成功");
+            await GetTopicInfo();
+            // postInfoResponse.IsLike = postInfoResponse.IsLike == true ? false : true;
+            // if (postInfoResponse.IsBad == true)
+            // {
+            //     postInfoResponse.IsBad = false;
+            // }
+        }
+        else if (response != null && response.Code == 401)
+        {
+            // 登录失效 需要重新登录
+            Debug.WriteLine("请重新登陆!");
+        }
+    }
 
     protected override async Task OnParametersSetAsync()
     {
