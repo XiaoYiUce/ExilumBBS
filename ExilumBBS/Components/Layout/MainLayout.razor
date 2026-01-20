@@ -188,6 +188,9 @@
         if (menu.Type == MenuType.Category)
         {
             postListState.CategoryId = menu.Id;
+            var bartitle = CategoryInfo.categoryList.Where(it => it.CategoryId == menu.Id)
+            .First().CategoryName;
+            appState.MainLayoutState.AppBarTitle = bartitle;
             // 判断当前页面是否为首页，如果不是，则切换到对应页面
             if (Navigation.Uri != "/")
             {

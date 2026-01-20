@@ -3,6 +3,7 @@
 @using System.Diagnostics
 @using System.Text.Json
 @using ExilumBBS.Models.DTO
+@using ExilumBBS.Models.NoDbEntity
 @using ExilumBBS.Models.Response
 @using ExilumBBS.State
 @using System.ComponentModel
@@ -120,22 +121,6 @@
     private long PubTime = 0;
     private long ReplyTime = 0;
     private long HotValue = 0;
-
-    class Category
-    {
-        public string CategoryName { get; set; } = "";
-        public int CategoryId { get; set; }
-    }
-
-    List<Category> categoryList = [
-            new Category{ CategoryName= "发现",CategoryId=1 },
-            new Category { CategoryName= "休息室",CategoryId=2 },
-            new Category { CategoryName= "攻略",CategoryId=3 },
-            new Category { CategoryName= "同人",CategoryId=7 },
-            new Category { CategoryName= "世界观",CategoryId=4 },
-            new Category { CategoryName= "官方",CategoryId=5 },
-            new Category { CategoryName= "互助厅",CategoryId=8},
-    ];
 
     private void ToTopic(long topicId)
     {
@@ -279,7 +264,7 @@
     {
         await base.OnInitializedAsync();
         appState.MainLayoutState.FilterVisable = true;
-        var bartitle = categoryList.Where(it => it.CategoryId == postListState.CategoryId)
+        var bartitle = CategoryInfo.categoryList.Where(it => it.CategoryId == postListState.CategoryId)
         .First().CategoryName;
 
         appState.MainLayoutState.AppBarTitle = bartitle;
