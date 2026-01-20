@@ -38,12 +38,24 @@
                                Color="primary">
                             楼主
                         </MChip>
+                        @if (postInfo.IsAdmin)
+                        {
+                            <MChip Small
+                                   Class="ml-2"
+                                   Color="primary">
+                                官方
+                            </MChip>
+                        }
+
                         <span class="text-caption text--secondary ml-2">
                             @postInfo.CreateTime
                         </span>
                     </MListItemTitle>
 
-                    @((MarkupString)postInfo.Content)
+                    <div class="mt-2 post-content">
+                        @((MarkupString)postInfo.Content)
+                    </div>
+
 
                     <div class="d-flex align-center mt-2 mb-2">
                         <MButton Icon
@@ -97,6 +109,9 @@
 
     img {
         max-width: 100%;
+    }
+
+    .post-content {
     }
 </style>
 

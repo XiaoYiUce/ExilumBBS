@@ -41,14 +41,22 @@
                         <MListItemContent>
                             <MListItemTitle>
                                 @item.UserNickName
-                                <MChip Color="primary" Small>
+                                <MChip Color="primary" Class="ml-2" Small>
                                     @($"LV{item.UserLevel}")
                                 </MChip>
+
+                                @if (item.IsAdmin)
+                                {
+                                    <MChip Small Class="ml-2"
+                                           Color="primary">
+                                        官方
+                                    </MChip>
+                                }
                             </MListItemTitle>
                             <MListItemSubtitle>@item.CreateTime</MListItemSubtitle>
                         </MListItemContent>
                     </div>
-                    <div class="home-list-content text-truncate">
+                    <div class="home-list-content text-truncate ml-2">
                         <div class="home-list-content-title">
                             @item.Title
                         </div>

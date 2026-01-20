@@ -11,14 +11,14 @@ namespace ExilumBBS.Models.NoDbEntity
     {
         public static MenuItem[] MenuItems = new MenuItem[]
         {
-            new MenuItem { Text= "发现", Icon= "mdi-folder",Id=1 },
+            new MenuItem { Text= "发现", Icon= "mdi-earth",Id=1 },
             new MenuItem { Text= "关注", Icon= "mdi-account-multiple",Id=100,Type=MenuType.NewTab,Route="/follow" },
-            new MenuItem { Text= "休息室", Icon= "mdi-star",Id=2 },
-            new MenuItem { Text= "攻略", Icon= "mdi-history",Id=3 },
-            new MenuItem { Text= "同人", Icon= "mdi-check-circle",Id=7 },
-            new MenuItem { Text= "世界观", Icon= "mdi-upload",Id=4 },
-            new MenuItem { Text= "官方", Icon= "mdi-cloud-upload",Id=5 },
-            new MenuItem { Text= "互助厅",Icon= "mdi-cloud-upload",Id=8},
+            new MenuItem { Text= "休息室", Icon= "mdi-sofa",Id=2 },
+            new MenuItem { Text= "攻略", Icon= "mdi-book",Id=3 },
+            new MenuItem { Text= "同人", Icon= "mdi-television",Id=7 },
+            new MenuItem { Text= "世界观", Icon= "mdi-earth-box",Id=4 },
+            new MenuItem { Text= "官方", Icon= "mdi-certificate",Id=5 },
+            new MenuItem { Text= "互助厅",Icon= "mdi-handshake",Id=8},
             new MenuItem { Text="设置",Icon="mdi-cog",Id=200,Type=MenuType.NewTab,Route="/settings"}
         };
     }
