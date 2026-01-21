@@ -1,0 +1,134 @@
+﻿@page "/exchange/scorelog"
+@using ExilumBBS.Models.Response.Point
+@using ExilumBBS.State
+@using System.Text.Json
+@using System.Diagnostics
+
+@layout WithBackLayout
+
+@inject AppState appState
+@inject HttpTools httpTools
+
+<MList>
+    <MCard Height="775"
+           Class="overflow-auto"
+           Style="margin: 0 auto"
+           Id="infinite-scroll-usage">
+        <MSubheader>积分记录</MSubheader>
+        @foreach (var item in ScoreLogs)
+        {
+            <MListItem>
+                <div class="scoreLogList">
+                    <div>
+                        <MListItemContent>
+                            <MListItemTitle>@((MarkupString)item.Reason)</MListItemTitle>
+                            <MListItemSubtitle>@((MarkupString)item.LogTime)</MListItemSubtitle>
+                        </MListItemContent>
+                    </div>
+                    <div class="score">@item.Score</div>
+                </div>
+
+
+            </MListItem>
+            <MDivider />
+        }
+        <MInfiniteScroll OnLoad="@OnLoad"
+                         Parent="#infinite-scroll-usage">
+        </MInfiniteScroll>
+    </MCard>
+
+</MList>
+
+<style>
+    .scoreLogList {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .score {
+        display: flex;
+        align-items: center;
+    }
+</style>
+
+@code {
+    /// <summary>
+    /// 页码
+    /// </summary>
+    private int PageNum { get; set; } = 1;
+
+    /// <summary>
+    /// 每页大小
+    /// </summary>
+    private int PageSize { get; set; } = 15;
+
+    /// <summary>
+    /// 计算获取总页数
+    /// </summary>
+    private int TotalPages => (int)Math.Ceiling((double)Total / PageSize);
+
+    private int Total { get; set; }
+
+    /// <summary>
+    /// 积分使用记录列表
+    /// </summary>
+    private List<Scorelog> ScoreLogs = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 设置AppBar标题
+        appState.WithbackLayoutState.AppBarTitle = "积分记录";
+        await base.OnInitializedAsync();
+        await GetScoreLogAsync();
+    }
+
+    /// <summary>
+    /// 触底加载
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    private async Task OnLoad(InfiniteScrollLoadEventArgs args)
+    {
+        await GetScoreLogAsync();
+        args.Status = PageNum >= TotalPages ? InfiniteScrollLoadStatus.Empty : InfiniteScrollLoadStatus.Ok;
+    }
+
+    /// <summary>
+    /// 获取积分记录
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetScoreLogAsync()
+    {
+        if (PageNum < TotalPages || (ScoreLogs.Count == 0 && PageNum == 1))
+        {
+            // 允许拉取（包括首次拉取和后续有效分页）
+            Debug.WriteLine($"page{PageNum} pageSize{PageSize}");
+            var response = await httpTools.GetAsync($"/community/member/score_log?page_num={PageNum}&page_size={PageSize}");
+            if (response != null && response.Code == 0)
+            {
+                if (response.Data.HasValue)
+                {
+                    var scoreResponse = response.Data.Value.Deserialize<ScorelogResponse>();
+                    if (scoreResponse != null)
+                    {
+                        Total = scoreResponse.Total;
+                        PageNum = PageNum + 1;
+                        Debug.WriteLine($"加载完后的PageNum{PageNum}，Total{Total},PageTotals{TotalPages}");
+                        if (scoreResponse.List != null)
+                        {
+                            ScoreLogs.AddRange(scoreResponse.List);
+                        }
+
+                    }
+                }
+
+            }
+        }
+    }
+}
