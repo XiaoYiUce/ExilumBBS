@@ -113,4 +113,5 @@ h1:focus {
 
 .topic-userinfo-line1 {
     display: flex;
+    align-items:center;
 }

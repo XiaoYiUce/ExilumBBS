@@ -13,7 +13,6 @@
         @foreach (var comment in Comments)
         {
             <MListItem>
-
                 <MListItemContent>
                     <MListItemTitle class="d-flex align-center">
                         <MAvatar size="40" Class="mr-2">
@@ -54,7 +53,7 @@
 
                     </MListItemTitle>
 
-                    <div class="mt-2 post-content ml-12">
+                    <div class="mt-2 pl-12" style="overflow-x:auto;">
                         @((MarkupString)comment.Content)
                     </div>
 
@@ -69,64 +68,52 @@
                             <MList Dense>
                                 @foreach (var item in repliesToShow)
                                 {
-
                                     <MListItem>
-
-                                        <MListItemContent>
-                                            <MListItemTitle class="d-flex align-center">
-                                                <div class="topic-userinfo">
-                                                    <div class="topic-userinfo-line1 align-center">
-                                                        <span class="font-weight-medium deep-orange--text">
-                                                            @item.UserNickName
+                                        <div class="topic-userinfo">
+                                            <div class="d-flex reply-title">
+                                                <div class="comment-userinfo">
+                                                    <span class="font-weight-medium deep-orange--text">
+                                                        @item.UserNickName
+                                                    </span>
+                                                    @if (!string.IsNullOrEmpty(item.ReplyTo))
+                                                    {
+                                                        <span class="ml-1">回复</span>
+                                                        <span class="ml-1 deep-orange--text">
+                                                            @item.ReplyTo
                                                         </span>
-                                                        @if (!string.IsNullOrEmpty(item.ReplyTo))
-                                                        {
-                                                            <span class="ml-1">回复</span>
-                                                            <span class="ml-1 deep-orange--text">
-                                                                @item.ReplyTo
-                                                            </span>
-                                                        }
-                                                        <span>
-                                                            :
-                                                        </span>
+                                                    }
+                                                    <span>
+                                                        :
+                                                    </span>
+                                                    @if (item.IsAuthor)
+                                                    {
                                                         <MChip Small
                                                                Class="ml-2"
                                                                Color="primary">
-                                                            @($"LV{item.UserLevel}")
+                                                            楼主
                                                         </MChip>
-                                                        @if (item.IsAuthor)
-                                                        {
-                                                            <MChip Small
-                                                                   Class="ml-2"
-                                                                   Color="primary">
-                                                                楼主
-                                                            </MChip>
-                                                        }
+                                                    }
 
-                                                        @if (item.IsAdmin)
-                                                        {
-                                                            <MChip Small
-                                                                   Class="ml-2"
-                                                                   Color="primary">
-                                                                官方
-                                                            </MChip>
-                                                        }
-                                                    </div>
-
-                                                    <span class="text-caption text--secondary">
-                                                        @item.CreateTime @item.IpLocation
-                                                    </span>
+                                                    @if (item.IsAdmin)
+                                                    {
+                                                        <MChip Small
+                                                               Class="ml-2"
+                                                               Color="primary">
+                                                            官方
+                                                        </MChip>
+                                                    }
                                                 </div>
 
+                                                <span class="text-caption text--secondary mt-2">
+                                                    @item.CreateTime @item.IpLocation
+                                                </span>
+                                            </div>
 
-                                            </MListItemTitle>
-
-                                            <div class="mt-2 post-content">
+                                            <div class="reply-content mt-2" style="overflow-x:auto;">
                                                 @((MarkupString)item.Content)
                                             </div>
-                                        </MListItemContent>
+                                        </div>
                                     </MListItem>
-
                                 }
 
                                 @if (showMore)
@@ -199,8 +186,8 @@
                     {
                         <MLazy Options="new IntersectionObserverInit(0.5)">
                             <MListItem>
-                                <MListItemContent>
-                                    <MListItemTitle class="d-flex align-center">
+                                <div class="topic-userinfo">
+                                    <div class="comment-userinfo">
                                         <MAvatar size="32" Class="mr-2">
                                             <MImage Src="@item.UserAvatar"></MImage>
                                         </MAvatar>
@@ -236,24 +223,22 @@
                                                 </MChip>
                                             }
                                         </div>
+                                    </div>
 
-                                    </MListItemTitle>
-
-                                    <div class="mt-2 post-content">
+                                    <div class="mt-2 ml-10 post-content">
                                         @((MarkupString)item.Content)
                                     </div>
 
-                                    <div class="mt-2 reply-toolbar grey--text text--lighten-1">
+                                    <div class="mt-2 ml-10 reply-toolbar grey--text text--lighten-1">
                                         @item.CreateTime
                                     </div>
-                                </MListItemContent>
+                                </div>
                             </MListItem>
+                            <MDivider></MDivider>
                         </MLazy>
-
                     }
                 }
             </MList>
-            <MDivider></MDivider>
         </MCard>
     </ChildContent>
 </MDialog>
@@ -269,19 +254,25 @@
         max-width: 100%;
     }
 
-    .reply-toolbar {
-    }
-
-    .topic-userinfo {
+    .comment-userinfo {
         display: flex;
-        flex-direction: column;
         width: 100%;
     }
 
-    .topic-userinfo-line1 {
+    .reply-title {
         display: flex;
+        flex-direction: column;
     }
 
+    .reply-toolbar {
+    }
+
+    .reply-content {
+        display: flex;
+        overflow-x: auto;
+        word-break: break-all;
+        width: 80%;
+    }
 </style>
 
 @code {
