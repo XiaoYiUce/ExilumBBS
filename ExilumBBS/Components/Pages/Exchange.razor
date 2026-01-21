@@ -1,0 +1,164 @@
+﻿@page "/exchange"
+@using ExilumBBS.State;
+@using ExilumBBS.Models.Response;
+@using ExilumBBS.Models.Response.Exchange;
+@using ExilumBBS.Models.Entity;
+@using System.Text.Json;
+@inject AppState appState
+@inject UserState userState
+@inject HttpTools httpTools
+@inject IPopupService popupService
+@inject IUserService userService
+
+<div class="exchangeList mt-4">
+    @if (User != null)
+    {
+        <div class="exchangeToolBar">
+            <MButton>@($"积分:{User.Score}")</MButton>
+            <MButton>积分中心</MButton>
+        </div>
+    }
+
+    @if (ExchangeItems != null && ExchangeItems.Count > 0)
+    {
+        @foreach (var item in ExchangeItems)
+        {
+            <MCard Class="mx-auto" MaxWidth="344" Outlined>
+                <MListItem ThreeLine>
+                    <MListItemContent>
+                        <div class="text-overline mb-4">
+                            @if (item.Cycle == "day")
+                            {
+                                @($"每日限购:{item.MaxExchangeCount - item.ExchangeCount}/{item.MaxExchangeCount}")
+                            }
+
+                            @if (item.Cycle == "month")
+                            {
+                                @($"每月限购:{item.MaxExchangeCount - item.ExchangeCount}/{item.MaxExchangeCount}")
+                            }
+                        </div>
+                        <MListItemTitle Class="text-h5 mb-1">
+                            @($"{item.ItemName}*{item.ItemCount}")
+                        </MListItemTitle>
+                        <MListItemSubtitle>售价: @item.UseScore</MListItemSubtitle>
+                    </MListItemContent>
+                    <MListItemAvatar Tile Size=80>
+                        <MImage Src="@item.ItemPic"></MImage>
+                    </MListItemAvatar>
+                </MListItem>
+                <MCardActions>
+                    <MButton Outlined Rounded Text OnClick="() => ExchangeItem(item)">兑换</MButton>
+                </MCardActions>
+            </MCard>
+        }
+    }
+
+</div>
+
+<style>
+    .exchangeList {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .exchangeToolBar {
+        display: flex;
+        gap: 1rem;
+        align-content: center;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+@code {
+    private List<ExchangeItem>? ExchangeItems { get; set; }
+
+    private UserEntity? User { get; set; }
+
+    /// <summary>
+    /// 获取兑换物品列表
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetExchangeItemAsync()
+    {
+        var response = await httpTools.GetAsync("/community/item/exchange_list");
+        if (response != null && response.Code == 0)
+        {
+            if (response.Data.HasValue)
+            {
+                var exchangeResponse = response.Data.Value.Deserialize<ExchangeResponse>();
+                if (exchangeResponse != null)
+                {
+                    ExchangeItems = exchangeResponse.List;
+                }
+            }
+
+        }
+        else if (response != null && response.Code == 401)
+        {
+            await popupService.EnqueueSnackbarAsync("请重新登录", AlertTypes.Warning);
+        }
+    }
+
+    /// <summary>
+    /// 兑换物品
+    /// </summary>
+    /// <param name="item">物品</param>
+    /// <returns></returns>
+    private async Task ExchangeItem(ExchangeItem item)
+    {
+        if ((item.MaxExchangeCount - item.ExchangeCount) == 0)
+        {
+            await popupService.EnqueueSnackbarAsync("已达兑换上限", AlertTypes.Warning);
+        }
+
+        var response = await httpTools.PostAsync("/community/item/exchange", new { exchange_id = item.ExchangeId });
+        if (response != null && response.Code == 0)
+        {
+            await popupService.EnqueueSnackbarAsync("兑换成功!", AlertTypes.Success);
+
+            // 更新账户积分明细
+            await GetUserInfoAsync();
+            await GetExchangeItemAsync();
+        }
+        else if (response != null && response.Code == 30013)
+        {
+            await popupService.EnqueueSnackbarAsync(response.Message, AlertTypes.Warning);
+        }
+        else if (response != null && response.Code == 401)
+        {
+            await popupService.EnqueueSnackbarAsync("登陆状态已失效，请登录", AlertTypes.Warning);
+        }
+        else
+        {
+            await popupService.EnqueueSnackbarAsync(response?.Message ?? "兑换失败", AlertTypes.Error);
+        }
+    }
+
+    private async Task GetUserInfoAsync()
+    {
+        var response = await httpTools.PostAsync("/community/member/info", null);
+        if (response != null && response.Code == 0)
+        {
+            if (response.Data.HasValue)
+            {
+                var user = response.Data.Value.GetProperty("user").Deserialize<UserEntity>();
+                if (user != null)
+                {
+                    User = user;
+                    await userService.CreateOrUpdateUserProfile(user);
+                }
+            }
+
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        appState.MainLayoutState.AppBarTitle = "兑换";
+        await base.OnInitializedAsync();
+        await GetExchangeItemAsync();
+        await GetUserInfoAsync();
+    }
+}

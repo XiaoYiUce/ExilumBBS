@@ -13,6 +13,7 @@ namespace ExilumBBS.Models.NoDbEntity
         {
             new MenuItem { Text= "发现", Icon= "mdi-earth",Id=1 },
             new MenuItem { Text= "关注", Icon= "mdi-account-multiple",Id=100,Type=MenuType.NewTab,Route="/follow",RequiredLogin=true },
+            new MenuItem { Text= "兑换", Icon="mdi-gift",Id=201,Type=MenuType.NewTab,Route="/exchange",RequiredLogin=true},
             new MenuItem { Text= "休息室", Icon= "mdi-sofa",Id=2 },
             new MenuItem { Text= "攻略", Icon= "mdi-book",Id=3 },
             new MenuItem { Text= "同人", Icon= "mdi-television",Id=7 },
