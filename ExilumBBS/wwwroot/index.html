@@ -26,31 +26,14 @@
         <span class="dismiss">🗙</span>
     </div>
 
+    <style>
+        #app {
+            height: 100vh;
+            overflow:hidden
+        }
+    </style>
     <script src="_framework/blazor.webview.js" autostart="false"></script>
     <script src="_content/Masa.Blazor/js/masa-blazor.js"></script>
-    <!--<script>
-
-        // 可通过 C# 注入变量控制是否开启
-
-        const enableVConsole = true; // 或由 C# 设置 window.enableDebug
-
-        if (enableVConsole) {
-
-            const script = document.createElement('script');
-
-            script.src = 'https://unpkg.com/vconsole@latest/dist/vconsole.min.js';
-
-            script.onload = () => {
-
-                new window.VConsole();
-
-            };
-
-            document.head.appendChild(script);
-
-        }
-
-    </script>-->
 </body>
 
 </html>

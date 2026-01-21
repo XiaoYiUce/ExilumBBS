@@ -114,15 +114,18 @@
                                 Color="primary">
                     @foreach (var item in Menu.MenuItems)
                     {
-                        <MListItem @onclick="() => ChangeCategory(item)" Value="item.Id">
-                            <MListItemIcon>
-                                <MIcon>@item.Icon</MIcon>
-                            </MListItemIcon>
+                        @if (!item.RequiredLogin || userState.IsLogin)
+                        {
+                            <MListItem @onclick="() => ChangeCategory(item)" Value="item.Id">
+                                <MListItemIcon>
+                                    <MIcon>@item.Icon</MIcon>
+                                </MListItemIcon>
+                                <MListItemContent>
+                                    <MListItemTitle>@item.Text</MListItemTitle>
+                                </MListItemContent>
+                            </MListItem>
+                        }
 
-                            <MListItemContent>
-                                <MListItemTitle>@item.Text</MListItemTitle>
-                            </MListItemContent>
-                        </MListItem>
                     }
                 </MListItemGroup>
             </MList>

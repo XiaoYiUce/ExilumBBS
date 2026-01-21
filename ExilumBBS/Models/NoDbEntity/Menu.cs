@@ -12,7 +12,7 @@ namespace ExilumBBS.Models.NoDbEntity
         public static MenuItem[] MenuItems = new MenuItem[]
         {
             new MenuItem { Text= "发现", Icon= "mdi-earth",Id=1 },
-            new MenuItem { Text= "关注", Icon= "mdi-account-multiple",Id=100,Type=MenuType.NewTab,Route="/follow" },
+            new MenuItem { Text= "关注", Icon= "mdi-account-multiple",Id=100,Type=MenuType.NewTab,Route="/follow",RequiredLogin=true },
             new MenuItem { Text= "休息室", Icon= "mdi-sofa",Id=2 },
             new MenuItem { Text= "攻略", Icon= "mdi-book",Id=3 },
             new MenuItem { Text= "同人", Icon= "mdi-television",Id=7 },
@@ -40,6 +40,7 @@ namespace ExilumBBS.Models.NoDbEntity
         /// 如果不是社区分类并且是跳转到其他页面的菜单，那需要设置路由
         /// </summary>
         public string? Route { get; set; }
+        public bool RequiredLogin { get; set; } = false;
     }
 
     public enum MenuType

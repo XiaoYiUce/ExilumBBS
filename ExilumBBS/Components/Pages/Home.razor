@@ -19,13 +19,13 @@
 @inject HttpTools httpTools
 
 @implements IDisposable
-<MPullRefresh OnRefresh="PullRefresh">
-    @if (showPage)
-    {
-        <MCard Height="775"
-               Class="overflow-auto"
-               Style="margin: 0 auto"
-               Id="infinite-scroll-usage">
+@if (showPage)
+{
+    <MCard Height="775"
+           Class="overflow-auto"
+           Style="margin: 0 auto"
+           Id="infinite-scroll-usage">
+        <MPullRefresh OnRefresh="PullRefresh">
             <MCellGroup Subheader="公告">
                 @foreach (var item in TopPostPreviews)
                 {
@@ -89,10 +89,12 @@
             <MInfiniteScroll OnLoad="@OnLoad"
                              Parent="#infinite-scroll-usage">
             </MInfiniteScroll>
-        </MCard>
-    }
+        </MPullRefresh>
 
-</MPullRefresh>
+    </MCard>
+}
+
+
 
 <style>
     .home-list {
