@@ -19,75 +19,80 @@
 @inject HttpTools httpTools
 
 @implements IDisposable
+<MPullRefresh OnRefresh="PullRefresh">
+    @if (showPage)
+    {
+        <MCard Height="775"
+               Class="overflow-auto"
+               Style="margin: 0 auto"
+               Id="infinite-scroll-usage">
+            <MCellGroup Subheader="公告">
+                @foreach (var item in TopPostPreviews)
+                {
+                    <MCell Title="@item.Title" Href="@($"/post/{item.TopicId}")"></MCell>
+                }
+            </MCellGroup>
+            <MList ThreeLine>
+                <MSubheader>帖子</MSubheader>
+                @foreach (var item in PostList)
+                {
+                    <MListItem OnClick="() => ToTopic(item.TopicId)">
+                        <div class="home-list">
+                            <div class="home-list-user">
+                                <MListItemAvatar>
+                                    <MImage Src="@item.UserAvatar"></MImage>
+                                </MListItemAvatar>
+                                <MListItemContent>
+                                    <MListItemTitle>
+                                        @item.UserNickName
+                                        <MChip Color="primary" Class="ml-2" Small>
+                                            @($"LV{item.UserLevel}")
+                                        </MChip>
 
-<MCard Height="775"
-       Class="overflow-auto"
-       Style="margin: 0 auto"
-       Id="infinite-scroll-usage">
-    <MCellGroup Subheader="公告">
-        @foreach (var item in TopPostPreviews)
-        {
-            <MCell Title="@item.Title" Href="@($"/post/{item.TopicId}")"></MCell>
-        }
-    </MCellGroup>
-    <MList ThreeLine>
-        <MSubheader>帖子</MSubheader>
-        @foreach (var item in PostList)
-        {
-            <MListItem OnClick="() => ToTopic(item.TopicId)">
-                <div class="home-list">
-                    <div class="home-list-user">
-                        <MListItemAvatar>
-                            <MImage Src="@item.UserAvatar"></MImage>
-                        </MListItemAvatar>
-                        <MListItemContent>
-                            <MListItemTitle>
-                                @item.UserNickName
-                                <MChip Color="primary" Class="ml-2" Small>
-                                    @($"LV{item.UserLevel}")
-                                </MChip>
+                                        @if (item.IsAdmin)
+                                        {
+                                            <MChip Small Class="ml-2"
+                                                   Color="primary">
+                                                官方
+                                            </MChip>
+                                        }
+                                    </MListItemTitle>
+                                    <MListItemSubtitle>@item.CreateTime</MListItemSubtitle>
+                                </MListItemContent>
+                            </div>
+                            <div class="home-list-content text-truncate ml-2">
+                                <div class="home-list-content-title">
+                                    @item.Title
+                                </div>
+                                <div class="home-list-content-content text-truncate">
+                                    @item.Content
+                                </div>
+                            </div>
+                            <div class="d-flex align-center" @onclick:stopPropagation>
+                                <div class="ml-2">
+                                    <MIcon Color="default">mdi-comment-outline</MIcon>
+                                    <span class="text-caption text--secondary ml-1">@item.CommentNum</span>
+                                </div>
+                                <div class="ml-2">
+                                    <MButton Color="@(item.IsLike ? "primary" : "default")" Icon Size="small" OnClick="() => ToggleLike(item)">
+                                        <MIcon>@(item.IsLike ? "mdi-thumb-up" : "mdi-thumb-up-outline")</MIcon>
+                                    </MButton>
+                                </div>
+                                <span class="text-caption text--secondary ml-1">@item.LikeNum</span>
+                            </div>
+                        </div>
+                    </MListItem>
 
-                                @if (item.IsAdmin)
-                                {
-                                    <MChip Small Class="ml-2"
-                                           Color="primary">
-                                        官方
-                                    </MChip>
-                                }
-                            </MListItemTitle>
-                            <MListItemSubtitle>@item.CreateTime</MListItemSubtitle>
-                        </MListItemContent>
-                    </div>
-                    <div class="home-list-content text-truncate ml-2">
-                        <div class="home-list-content-title">
-                            @item.Title
-                        </div>
-                        <div class="home-list-content-content text-truncate">
-                            @item.Content
-                        </div>
-                    </div>
-                    <div class="d-flex align-center" @onclick:stopPropagation>
-                        <div class="ml-2">
-                            <MIcon Color="default">mdi-comment-outline</MIcon>
-                            <span class="text-caption text--secondary ml-1">@item.CommentNum</span>
-                        </div>
-                        <div class="ml-2">
-                            <MButton Color="@(item.IsLike ? "primary" : "default")" Icon Size="small" OnClick="() => ToggleLike(item)">
-                                <MIcon>@(item.IsLike ? "mdi-thumb-up" : "mdi-thumb-up-outline")</MIcon>
-                            </MButton>
-                        </div>
-                        <span class="text-caption text--secondary ml-1">@item.LikeNum</span>
-                    </div>
-                </div>
-            </MListItem>
+                    <MDivider></MDivider>
+                }
+            </MList>
+            <MInfiniteScroll OnLoad="@OnLoad"
+                             Parent="#infinite-scroll-usage">
+            </MInfiniteScroll>
+        </MCard>
+    }
 
-            <MDivider></MDivider>
-        }
-    </MList>
-    <MInfiniteScroll OnLoad="@OnLoad"
-                     Parent="#infinite-scroll-usage">
-    </MInfiniteScroll>
-</MCard>
+</MPullRefresh>
 
 <style>
     .home-list {
@@ -112,6 +117,11 @@
     /// 帖子列表
     /// </summary>
     private List<PostPreview> PostList = [];
+
+    /// <summary>
+    /// 控制组件是否可见
+    /// </summary>
+    private bool showPage = false;
 
     /// <summary>
     /// 是否还有下一页内容
@@ -173,6 +183,27 @@
     {
         await PostLoad();
         args.Status = NextPage == false ? InfiniteScrollLoadStatus.Empty : InfiniteScrollLoadStatus.Ok;
+    }
+
+    /// <summary>
+    /// 下拉刷新
+    /// </summary>
+    /// <returns></returns>
+    private async Task PullRefresh()
+    {
+        // 值初始化
+        showPage = false;
+        TopPostPreviews = [];
+        PostList = [];
+        NextPage = true;
+        LastTid = 0;
+        PubTime = 0;
+        ReplyTime = 0;
+        HotValue = 0;
+        // 拉取数据
+        await PostLoad();
+        await PostTop();
+        showPage = true;
     }
 
     /// <summary>
@@ -270,6 +301,7 @@
         appState.MainLayoutState.AppBarTitle = bartitle;
         postListState.PropertyChanged += OnStateChanged;
         await PostTop();
+        showPage = true;
         Debug.WriteLine("Home初始化");
     }
 

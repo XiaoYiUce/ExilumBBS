@@ -28,29 +28,35 @@
                         <MAvatar size="40" Class="mr-2">
                             <MImage Src="@postInfo.UserAvatar"></MImage>
                         </MAvatar>
-                        <span class="font-weight-medium">@postInfo.UserNickName</span>
-                        <MChip Small
-                               Class="ml-2"
-                               Color="primary">
-                            @($"LV{postInfo.UserLevel}")
-                        </MChip>
-                        <MChip Small
-                               Class="ml-2"
-                               Color="primary">
-                            楼主
-                        </MChip>
-                        @if (postInfo.IsAdmin)
-                        {
-                            <MChip Small
-                                   Class="ml-2"
-                                   Color="primary">
-                                官方
-                            </MChip>
-                        }
+                        <div class="topic-userinfo">
+                            <div class="topic-userinfo-line1 align-center">
+                                <span class="font-weight-medium">@postInfo.UserNickName</span>
+                                <MChip Small
+                                       Class="ml-2"
+                                       Color="primary">
+                                    @($"LV{postInfo.UserLevel}")
+                                </MChip>
+                                <MChip Small
+                                       Class="ml-2"
+                                       Color="primary">
+                                    楼主
+                                </MChip>
+                                @if (postInfo.IsAdmin)
+                                {
+                                    <MChip Small
+                                           Class="ml-2"
+                                           Color="primary">
+                                        官方
+                                    </MChip>
+                                }
+                            </div>
+                            <span class="text-caption text--secondary ml-2">
+                                @postInfo.CreateTime @postInfo.IpLocation
+                            </span>
+                        </div>
 
-                        <span class="text-caption text--secondary ml-2">
-                            @postInfo.CreateTime
-                        </span>
+
+
                     </MListItemTitle>
 
                     <div class="mt-2 post-content">

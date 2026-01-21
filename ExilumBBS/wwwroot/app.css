@@ -104,3 +104,13 @@ h1:focus {
         padding-left: env(safe-area-inset-left);
     }
 }
+
+.topic-userinfo {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.topic-userinfo-line1 {
+    display: flex;
+}
