@@ -16,9 +16,8 @@
 @if (postInfo != null && !string.IsNullOrEmpty(postInfo.Content))
 {
 
-    <MCard Height="775"
-           Class="overflow-auto"
-           Style="margin: 0 auto"
+    <MCard Class="overflow-auto"
+           Style="margin: 0 auto;height: calc(100vh - 64px);"
            Id="infinite-scroll-usage">
         <MList dense>
             <MListItem>
