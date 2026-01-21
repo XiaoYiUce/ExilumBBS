@@ -53,6 +53,15 @@
                 <MButton Icon @onclick="SignIn">
                     <MIcon>mdi-clipboard-check</MIcon>
                 </MButton>
+
+                <MBadge Content="_message" Value="_message != 0" Color="red"
+                        OverLap>
+                    <ChildContent>
+                        <MButton Icon OnClick="() => GoToNotify()">
+                            <MIcon>mdi-message</MIcon>
+                        </MButton>
+                    </ChildContent>
+                </MBadge>
             }
 
         </MAppBar>
@@ -141,6 +150,8 @@
     private UserEntity? currentUser;
     private List<string> sortFilterValue = [];
 
+    private int _message = 2;
+
     record Data(int SortType, string Name, List<Data>? Children = null, bool Disabled = false);
 
     static readonly List<Data> Columns = new()
@@ -154,6 +165,14 @@
     {
         await base.OnInitializedAsync();
         await GetUserProfile();
+    }
+
+    /// <summary>
+    /// 前往消息通知页
+    /// </summary>
+    private void GoToNotify()
+    {
+        Navigation.NavigateTo("/notify");
     }
 
     /// <summary>
