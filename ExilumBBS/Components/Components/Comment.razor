@@ -176,10 +176,9 @@
                 <MToolbarTitle>评论</MToolbarTitle>
                 <MSpacer></MSpacer>
             </MToolbar>
-            <MList Dense
-                   Height="700"
+            <MList Dense 
                    Class="overflow-auto"
-                   Style="margin: 0 auto">
+                   Style="margin: 0 auto;height:calc(100vh - 64px)">
                 @if (showCommentDialog == true)
                 {
                     @foreach (var item in ReplyList)

@@ -20,7 +20,7 @@
         <Nullable>enable</Nullable>
 
         <!-- Display name -->
-        <ApplicationTitle>ExilumBBS</ApplicationTitle>
+        <ApplicationTitle>追放社区</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.lemonyi.exilumbbs</ApplicationId>
