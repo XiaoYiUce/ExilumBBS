@@ -11,7 +11,7 @@ namespace ExilumBBS.Models.Response.Notify
         public long Id { get; set; }
 
         [JsonPropertyName("log_time")]
-        public DateTime LogTime { get; set; }
+        public string LogTime { get; set; } = string.Empty;
 
         [JsonPropertyName("title")]
         public string Title { get; set; } = string.Empty;

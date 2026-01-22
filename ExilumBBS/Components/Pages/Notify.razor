@@ -3,6 +3,7 @@
 @using ExilumBBS.State
 @using System.Text.Json.Serialization
 @using System.Text.Json
+@using System.Diagnostics
 
 @inject AppState appState
 @inject HttpTools httpTools
@@ -13,44 +14,84 @@
 
 <MToolbar>
     <MTabs Grow>
-        <MTab>
+        <MTab OnClick="() => SwitchType(1)">
             <MBadge Content="unreadnumResponse.CommentUnreadNum" Value="unreadnumResponse.CommentUnreadNum != 0" Color="red">
                 回复
             </MBadge>
         </MTab>
-        <MTab>
+        <MTab OnClick="() => SwitchType(2)">
             <MBadge Content="unreadnumResponse.LikeUnreadNum" Value="unreadnumResponse.LikeUnreadNum != 0" Color="red">
                 获赞
             </MBadge>
         </MTab>
-        <MTab>
+        <MTab OnClick="() => SwitchType(3)">
             <MBadge Content="unreadnumResponse.FollowUnreadNum" Value="unreadnumResponse.FollowUnreadNum != 0" Color="red">
                 关注
             </MBadge>
         </MTab>
-        <MTab>
+        <MTab OnClick="() => SwitchType(4)">
             <MBadge Content="unreadnumResponse.NoticeUnreadNum" Value="unreadnumResponse.NoticeUnreadNum != 0" Color="red">
                 通知
             </MBadge>
         </MTab>
-
-        <MTabsItems>
-            <MTabItem>
-                <div style="height:calc(100vh-128px)">a</div>
-            </MTabItem>
-            <MTabItem>
-                <div style="height:calc(100vh-128px)">b</div>
-            </MTabItem>
-            <MTabItem>
-                <div style="height:calc(100vh-128px)">c</div>
-            </MTabItem>
-            <MTabItem>
-                <div style="height:calc(100vh-128px)">d</div>
-            </MTabItem>
-        </MTabsItems>
-
     </MTabs>
 </MToolbar>
+
+
+@if (ListType == 1)
+{
+    <div id="infinite-scroll-usage" class="overflow-auto" style="margin: 0 auto;height: calc(100vh - 128px);">
+        @foreach (var item in commentMessageItems)
+        {
+            <div>
+                @item.Title
+            </div>
+        }
+        <MInfiniteScroll OnLoad="@OnLoad"
+                         Parent="#infinite-scroll-usage">
+        </MInfiniteScroll>
+    </div>
+}
+
+@if (ListType == 2)
+{
+    <div id="infinite-scroll-usage" class="overflow-auto" style="margin: 0 auto;height: calc(100vh - 128px);">
+        @foreach (var item in likeMessageItems)
+        {
+            <div>
+                @item.Title
+            </div>
+        }
+        <MInfiniteScroll OnLoad="@OnLoad"
+                         Parent="#infinite-scroll-usage">
+        </MInfiniteScroll>
+    </div>
+}
+
+@if (ListType == 3)
+{
+    <div id="infinite-scroll-usage" class="overflow-auto" style="margin: 0 auto;height: calc(100vh - 128px);">
+        @foreach (var item in followMessageItems)
+        {
+            <div>
+                @item.Title
+            </div>
+        }
+        <MInfiniteScroll OnLoad="@OnLoad"
+                         Parent="#infinite-scroll-usage">
+        </MInfiniteScroll>
+    </div>
+}
+
+@if (ListType == 4)
+{
+    <div id="infinite-scroll-usage" class="overflow-auto" style="margin: 0 auto;height: calc(100vh - 128px);">
+        <MInfiniteScroll OnLoad="@OnLoad"
+                         Parent="#infinite-scroll-usage">
+        </MInfiniteScroll>
+    </div>
+}
+
 
 @code {
     private UnreadnumResponse unreadnumResponse = new UnreadnumResponse();
@@ -58,7 +99,7 @@
     /// <summary>
     /// 要查看的消息类型
     /// </summary>
-    private int ListType { get; set; }
+    private int ListType { get; set; } = 1;
 
     /// <summary>
     /// 消息页码
@@ -80,11 +121,29 @@
     /// </summary>
     private int TotalPages => (int)Math.Ceiling((double)Total / PageSize);
 
+    private List<CommentMessageItem> commentMessageItems = [];
+    private List<FollowMessageItem> followMessageItems = [];
+    private List<LikeMessageItem> likeMessageItems = [];
+
     protected override async Task OnInitializedAsync()
     {
         appState.WithbackLayoutState.AppBarTitle = "消息";
         await GetUnreadNum();
+        await GetMessageListAsync();
         await base.OnInitializedAsync();
+    }
+
+    private async Task SwitchType(int type)
+    {
+        ListType = type;
+        commentMessageItems = [];
+        followMessageItems = [];
+        likeMessageItems = [];
+        PageNum = 1;
+        Total = 0;
+
+        Debug.WriteLine(ListType);
+        // await GetMessageListAsync();
     }
 
     //// <summary>
@@ -124,8 +183,53 @@
     {
         if (PageNum < TotalPages || (Total == 0 && PageNum == 1))
         {
-            var response = await httpTools.GetAsync($"/community/message/list?type=&{ListType}page_num={PageNum}&page_size={PageSize}&is_pc=1");
-        }
+            var response = await httpTools.GetAsync($"/community/message/list?type={ListType}&page_num={PageNum}&page_size={PageSize}&is_pc=1");
+            if (response != null && response.Code == 0)
+            {
+                if (response.Data.HasValue)
+                {
+                    var messageList = response.Data.Value.Deserialize<MessageListResponse>();
+                    if (messageList != null)
+                    {
+                        Total = messageList.Total;
+                        PageNum = PageNum + 1;
+                        switch (ListType)
+                        {
+                            case 1:
+                                var commentMsgList = messageList.List.Deserialize<List<CommentMessageItem>>();
+                                if (commentMsgList != null)
+                                {
+                                    commentMessageItems.AddRange(commentMsgList);
+                                }
+                                break;
+                            case 2:
+                                var likeMsgList = messageList.List.Deserialize<List<LikeMessageItem>>();
+                                if (likeMsgList != null)
+                                {
+                                    likeMessageItems.AddRange(likeMsgList);
+                                }
+                                break;
+                            case 3:
+                                var followMsgList = messageList.List.Deserialize<List<FollowMessageItem>>();
+                                if (followMsgList != null)
+                                {
+                                    followMessageItems.AddRange(followMsgList);
+                                }
+                                break;
+                            case 4:
+                                // 系统消息处理 暂时留空
+                                // var commentMsgList = messageList.List.Deserialize<List<CommentMessageItem>>();
+                                // if (commentMsgList != null)
+                                // {
+                                //     commentMessageItems.AddRange(commentMsgList);
+                                // }
+                                break;
+                        }
+                    }
 
+                }
+            }
+
+        }
     }
 }
