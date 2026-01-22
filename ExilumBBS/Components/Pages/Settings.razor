@@ -11,7 +11,10 @@
 @layout WithBackLayout
 
 <MCellGroup>
-    <MCell Title="退出登录" OnClick="Logout"></MCell>
+    @if (userState.IsLogin)
+    {
+        <MCell Title="退出登录" OnClick="Logout"></MCell>
+    }
 </MCellGroup>
 
 

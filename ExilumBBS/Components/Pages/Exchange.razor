@@ -96,10 +96,6 @@
             }
 
         }
-        else if (response != null && response.Code == 401)
-        {
-            await popupService.EnqueueSnackbarAsync("请重新登录", AlertTypes.Warning);
-        }
     }
 
     /// <summary>
@@ -126,10 +122,6 @@
         else if (response != null && response.Code == 30013)
         {
             await popupService.EnqueueSnackbarAsync(response.Message, AlertTypes.Warning);
-        }
-        else if (response != null && response.Code == 401)
-        {
-            await popupService.EnqueueSnackbarAsync("登陆状态已失效，请登录", AlertTypes.Warning);
         }
         else
         {

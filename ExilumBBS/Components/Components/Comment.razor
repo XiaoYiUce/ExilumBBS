@@ -316,11 +316,6 @@
                 comment.DislikeNum--;
             }
         }
-        else if (response != null && response.Code == 401)
-        {
-            Debug.WriteLine("请先重新登录!");
-            await popupService.EnqueueSnackbarAsync("请重新登陆", AlertTypes.Warning);
-        }
     }
 
     public async Task ToggleDisLike(CommentResponse comment)
@@ -350,11 +345,6 @@
                 comment.IsLike = false;
                 comment.LikeNum--;
             }
-        }
-        else if (response != null && response.Code == 401)
-        {
-            Debug.WriteLine("请先重新登录!");
-            await popupService.EnqueueSnackbarAsync("请重新登陆", AlertTypes.Warning);
         }
     }
 

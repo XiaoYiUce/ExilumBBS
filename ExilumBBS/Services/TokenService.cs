@@ -2,6 +2,7 @@
 using ExilumBBS.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace ExilumBBS.Services
@@ -14,7 +15,6 @@ namespace ExilumBBS.Services
         /// <returns></returns>
         public async Task DeleteTokenAsync(string tokenValue)
         {
-            // 暂时不考虑多用户登录 先全部清空
             await tokenDb.AsDeleteable().Where(it => it.TokenValue == tokenValue).ExecuteCommandAsync();
         }
 
@@ -52,6 +52,7 @@ namespace ExilumBBS.Services
             var result = tokenDb.AsQueryable().First();
             if (result != null)
             {
+                Debug.WriteLine(result.TokenValue);
                 return result.TokenValue;
             }
 

@@ -1,24 +1,131 @@
 ﻿@page "/notify"
+@using ExilumBBS.Models.Response.Notify
+@using ExilumBBS.State
+@using System.Text.Json.Serialization
+@using System.Text.Json
+
+@inject AppState appState
+@inject HttpTools httpTools
+
+@inject IPopupService popupService
 
 @layout WithBackLayout
 
 <MToolbar>
     <MTabs Grow>
         <MTab>
-            回复
+            <MBadge Content="unreadnumResponse.CommentUnreadNum" Value="unreadnumResponse.CommentUnreadNum != 0" Color="red">
+                回复
+            </MBadge>
         </MTab>
         <MTab>
-            获赞
+            <MBadge Content="unreadnumResponse.LikeUnreadNum" Value="unreadnumResponse.LikeUnreadNum != 0" Color="red">
+                获赞
+            </MBadge>
         </MTab>
         <MTab>
-            关注
+            <MBadge Content="unreadnumResponse.FollowUnreadNum" Value="unreadnumResponse.FollowUnreadNum != 0" Color="red">
+                关注
+            </MBadge>
         </MTab>
         <MTab>
-            通知
+            <MBadge Content="unreadnumResponse.NoticeUnreadNum" Value="unreadnumResponse.NoticeUnreadNum != 0" Color="red">
+                通知
+            </MBadge>
         </MTab>
+
+        <MTabsItems>
+            <MTabItem>
+                <div style="height:calc(100vh-128px)">a</div>
+            </MTabItem>
+            <MTabItem>
+                <div style="height:calc(100vh-128px)">b</div>
+            </MTabItem>
+            <MTabItem>
+                <div style="height:calc(100vh-128px)">c</div>
+            </MTabItem>
+            <MTabItem>
+                <div style="height:calc(100vh-128px)">d</div>
+            </MTabItem>
+        </MTabsItems>
+
     </MTabs>
 </MToolbar>
 
 @code {
+    private UnreadnumResponse unreadnumResponse = new UnreadnumResponse();
 
+    /// <summary>
+    /// 要查看的消息类型
+    /// </summary>
+    private int ListType { get; set; }
+
+    /// <summary>
+    /// 消息页码
+    /// </summary>
+    private int PageNum { get; set; } = 1;
+
+    /// <summary>
+    /// 每页大小
+    /// </summary>
+    private int PageSize { get; set; } = 20;
+
+    /// <summary>
+    /// 总数据条数
+    /// </summary>
+    private long Total { get; set; }
+
+    /// <summary>
+    /// 计算获取总页数
+    /// </summary>
+    private int TotalPages => (int)Math.Ceiling((double)Total / PageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        appState.WithbackLayoutState.AppBarTitle = "消息";
+        await GetUnreadNum();
+        await base.OnInitializedAsync();
+    }
+
+    //// <summary>
+    /// 获取未读消息数字
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetUnreadNum()
+    {
+        var response = await httpTools.GetAsync("/community/message/unread_num");
+        if (response != null && response.Code == 0 && response.Data.HasValue)
+        {
+            var unreadNumResponse = response.Data.Value.Deserialize<UnreadnumResponse>();
+
+            if (unreadNumResponse != null)
+            {
+                this.unreadnumResponse = unreadNumResponse;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 触底加载
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    private async Task OnLoad(InfiniteScrollLoadEventArgs args)
+    {
+        await GetMessageListAsync();
+        args.Status = PageNum >= TotalPages ? InfiniteScrollLoadStatus.Empty : InfiniteScrollLoadStatus.Ok;
+    }
+
+    /// <summary>
+    /// 获取消息列表
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetMessageListAsync()
+    {
+        if (PageNum < TotalPages || (Total == 0 && PageNum == 1))
+        {
+            var response = await httpTools.GetAsync($"/community/message/list?type=&{ListType}page_num={PageNum}&page_size={PageSize}&is_pc=1");
+        }
+
+    }
 }
