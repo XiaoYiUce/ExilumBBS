@@ -41,12 +41,23 @@
 @if (ListType == 1)
 {
     <div id="infinite-scroll-usage" class="overflow-auto" style="margin: 0 auto;height: calc(100vh - 128px);">
-        @foreach (var item in commentMessageItems)
-        {
-            <div>
-                @item.Title
-            </div>
-        }
+        <MList TwoLine>
+            @foreach (var item in commentMessageItems)
+            {
+                    <MListItem>
+                        <MListItemAvatar>
+                            <MImage Src="@item.AvatarUrl"></MImage>
+                        </MListItemAvatar>
+
+                        <MListItemContent>
+                            <MListItemTitle>@((MarkupString)item.Title)</MListItemTitle>
+                            <MListItemSubtitle>@((MarkupString)item.Content)</MListItemSubtitle>
+                        <MListItemSubtitle><div class="logtime">@item.LogTime</div></MListItemSubtitle>
+                        </MListItemContent>
+                    </MListItem>
+            }
+        </MList>
+
         <MInfiniteScroll OnLoad="@OnLoad"
                          Parent="#infinite-scroll-usage">
         </MInfiniteScroll>
@@ -56,12 +67,21 @@
 @if (ListType == 2)
 {
     <div id="infinite-scroll-usage" class="overflow-auto" style="margin: 0 auto;height: calc(100vh - 128px);">
-        @foreach (var item in likeMessageItems)
-        {
-            <div>
-                @item.Title
-            </div>
-        }
+        <MList TwoLine>
+            @foreach (var item in likeMessageItems)
+            {
+                <MListItem>
+                    <MListItemAvatar>
+                        <MImage Src="@item.AvatarUrl"></MImage>
+                    </MListItemAvatar>
+
+                    <MListItemContent>
+                        <MListItemTitle>@((MarkupString)item.Title)</MListItemTitle>
+                        <MListItemSubtitle><div class="logtime">@item.LogTime</div></MListItemSubtitle>
+                    </MListItemContent>
+                </MListItem>
+            }
+        </MList>
         <MInfiniteScroll OnLoad="@OnLoad"
                          Parent="#infinite-scroll-usage">
         </MInfiniteScroll>
@@ -71,12 +91,21 @@
 @if (ListType == 3)
 {
     <div id="infinite-scroll-usage" class="overflow-auto" style="margin: 0 auto;height: calc(100vh - 128px);">
-        @foreach (var item in followMessageItems)
-        {
-            <div>
-                @item.Title
-            </div>
-        }
+        <MList TwoLine>
+            @foreach (var item in followMessageItems)
+            {
+                <MListItem>
+                    <MListItemAvatar>
+                        <MImage Src="@item.AvatarUrl"></MImage>
+                    </MListItemAvatar>
+
+                    <MListItemContent>
+                        <MListItemTitle>@((MarkupString)item.Title)</MListItemTitle>
+                        <MListItemSubtitle><div class="logtime">@item.LogTime</div></MListItemSubtitle>
+                    </MListItemContent>
+                </MListItem>
+            }
+        </MList>
         <MInfiniteScroll OnLoad="@OnLoad"
                          Parent="#infinite-scroll-usage">
         </MInfiniteScroll>
@@ -91,6 +120,13 @@
         </MInfiniteScroll>
     </div>
 }
+
+<style>
+    .logtime{
+        display:flex;
+        justify-content:flex-end;
+    }
+</style>
 
 
 @code {
