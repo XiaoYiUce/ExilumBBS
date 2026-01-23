@@ -12,6 +12,7 @@
 @inject ITokenService tokenService
 @inject IPopupService popupService
 @inject NavigationManager Navigation
+@inject INavigationService navigationService
 
 <MTextField @bind-Value="userName"
             Type="text"
@@ -46,6 +47,12 @@
     private string password = "";
 
     private bool showPassword = false;
+
+    protected override Task OnInitializedAsync()
+    {
+        navigationService.Initialize(Navigation);
+        return base.OnInitializedAsync();
+    }
 
     private async Task LoginAsync()
     {
@@ -98,7 +105,7 @@
                     await tokenService.SetTokenAsync(resData.Token);
                     await popupService.EnqueueSnackbarAsync("登录成功", AlertTypes.Success);
                     await Task.Delay(1000);
-                    Navigation.NavigateTo("/");
+                    navigationService.NavigateTo("/");
                 }
             }
             else if (response != null && response.Code == -1)

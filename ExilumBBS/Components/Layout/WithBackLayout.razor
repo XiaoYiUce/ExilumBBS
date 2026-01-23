@@ -1,6 +1,8 @@
 ﻿@using ExilumBBS.State
 @inherits LayoutComponentBase
 @inject IJSRuntime JS
+@inject INavigationService navigationService
+@inject NavigationManager navigationManager
 
 @inject AppState appState
 
@@ -15,3 +17,11 @@
         @Body
     </MMain>
 </MApp>
+
+@code {
+    protected override Task OnInitializedAsync()
+    {
+        navigationService.Initialize(navigationManager);
+        return base.OnInitializedAsync();
+    }
+}

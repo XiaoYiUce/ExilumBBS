@@ -7,13 +7,15 @@
 @using Masa.Blazor.Presets
 
 @inherits LayoutComponentBase
-@inject IUserService userService
+
 @inject HttpTools httpTools
 @inject NavigationManager Navigation
 @inject PostListState postListState
 @inject AppState appState
 @inject UserState userState
+@inject IUserService userService
 @inject IPopupService popupService
+@inject INavigationService navigationService
 
 <MApp>
     <MMain>
@@ -164,13 +166,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
-
         if (userState.IsLogin)
         {
             await GetUserProfile();
             await GetUnreadNum();
         }
+
+        navigationService.Initialize(Navigation);
+        await base.OnInitializedAsync();
+
+
     }
 
     private async Task GetUnreadNum()
@@ -192,7 +197,7 @@
     /// </summary>
     private void GoToNotify()
     {
-        Navigation.NavigateTo("/notify");
+        navigationService.NavigateTo("/notify");
     }
 
     /// <summary>
@@ -237,13 +242,13 @@
             if (Navigation.Uri != "/")
             {
                 //不是首页 返回回首页
-                Navigation.NavigateTo("/");
+                navigationService.NavigateTo("/");
             }
         }
         else if (menu.Type == MenuType.NewTab)
         {
             if (menu.Route != null)
-                Navigation.NavigateTo(menu.Route);
+                navigationService.NavigateTo(menu.Route);
         }
 
         Debug.WriteLine(appState.CurrentMenu);
@@ -270,7 +275,7 @@
 
     private void GoToLogin()
     {
-        Navigation.NavigateTo("/login");
+        navigationService.NavigateTo("/login");
     }
 
     void ValueChanged(StringNumber value)

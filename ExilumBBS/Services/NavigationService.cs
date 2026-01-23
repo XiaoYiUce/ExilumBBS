@@ -12,41 +12,45 @@ namespace ExilumBBS.Services
     /// </summary>
     public class NavigationService : INavigationService
     {
-        private IJSRuntime _jsRuntime = default!;
+        private NavigationManager _navigation = default!;
 
-        //private NavigationManager _navigation = default!;
+        /// <summary>
+        /// 历史URL列表
+        /// </summary>
+        private List<string> HistoryUrlList { get; set; } = [];
 
-        ///// <summary>
-        ///// 历史URL列表
-        ///// </summary>
-        //private List<string> HistoryUrlList { get; set; } = [];
-
-        //public string Uri => _navigation.Uri;
-
-        ///// <summary>
-        ///// 跳转到指定页
-        ///// </summary>
-        ///// <param name="url"></param>
-        //public void NavigateTo(string url)
-        //{
-        //    HistoryUrlList.Add(url);
-        //    _navigation.NavigateTo(url);
-        //}
+        /// <summary>
+        /// 跳转到指定页
+        /// </summary>
+        /// <param name="url"></param>
+        public void NavigateTo(string url)
+        {
+            HistoryUrlList.Add(url);
+            _navigation.NavigateTo(url);
+        }
 
         /// <summary>
         /// 返回
         /// </summary>
         public async void NavigateBack()
         {
-            Debug.WriteLine("back");
-            var location = _jsRuntime.InvokeAsync<string>("window.location.pathname");
-            Debug.WriteLine(location);
-            await _jsRuntime.InvokeVoidAsync("history.back");
+            if (HistoryUrlList.Count > 0)
+            {
+                HistoryUrlList.RemoveAt(HistoryUrlList.Count - 1);
+                _navigation.NavigateTo("javascript:history.back()");
+            }
+            else
+            {
+#if ANDROID
+                Application.Current?.Quit();
+#endif
+            }
+
         }
 
-        public void Initialize(IJSRuntime jSRuntime)
+        public void Initialize(NavigationManager navigation)
         {
-            _jsRuntime = jSRuntime;
+            _navigation = navigation;
         }
     }
 }

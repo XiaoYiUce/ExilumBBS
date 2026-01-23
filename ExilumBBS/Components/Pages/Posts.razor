@@ -10,8 +10,10 @@
 @using ExilumBBS.Models.Response.Post
 
 @inject HttpTools httpTools
+@inject NavigationManager navigationManager
 @inject ITokenService tokenService
 @inject IPopupService popupService
+@inject INavigationService navigationService
 
 @if (postInfo != null && !string.IsNullOrEmpty(postInfo.Content))
 {
@@ -292,6 +294,12 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        navigationService.Initialize(navigationManager);
+        return base.OnInitializedAsync();
     }
 
 }

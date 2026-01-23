@@ -12,6 +12,7 @@
 @inject ITokenService tokenService
 @inject IJSRuntime JS
 @inject IPopupService popupService
+@inject INavigationService navigationService
 @inject NavigationManager Navigation
 @inject PostListState postListState
 @inject UserState userState
@@ -135,7 +136,7 @@
 
     private void ToTopic(long topicId)
     {
-        Navigation.NavigateTo($"/post/{topicId}");
+        navigationService.NavigateTo($"/post/{topicId}");
     }
 
     /// <summary>
@@ -288,7 +289,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
+        navigationService.Initialize(Navigation);
         appState.MainLayoutState.FilterVisable = true;
         var bartitle = CategoryInfo.categoryList.Where(it => it.CategoryId == postListState.CategoryId)
         .First().CategoryName;
@@ -298,6 +299,7 @@
         await PostTop();
         showPage = true;
         Debug.WriteLine("Home初始化");
+        await base.OnInitializedAsync();
     }
 
     protected override async Task OnParametersSetAsync()
