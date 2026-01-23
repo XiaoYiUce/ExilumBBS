@@ -2,6 +2,7 @@
 using ExilumBBS.State;
 using ExilumBBS.Utils;
 using Masa.Blazor;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 
@@ -26,7 +27,9 @@ namespace ExilumBBS
             builder.Services.AddScoped(typeof(Repository<>));
 
             //状态机注入
+            builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<PostListState>();
+
 
             //注入Services
             builder.Services.AddScoped<ITokenService, TokenService>();

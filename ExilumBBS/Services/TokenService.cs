@@ -52,7 +52,6 @@ namespace ExilumBBS.Services
             var result = tokenDb.AsQueryable().First();
             if (result != null)
             {
-                Debug.WriteLine(result.TokenValue);
                 return result.TokenValue;
             }
 
