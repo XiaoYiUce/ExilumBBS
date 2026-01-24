@@ -130,6 +130,8 @@
 
     private async Task SwitchLoginMethod()
     {
+        userName = "";
+        password = "";
         if (loginType == LoginType.UserName)
         {
             loginType = LoginType.Message;
