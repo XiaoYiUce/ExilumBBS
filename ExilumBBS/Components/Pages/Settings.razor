@@ -1,4 +1,6 @@
 ﻿@page "/settings"
+@using ExilumBBS.Services.SettingService
+@using ExilumBBS.Services.ThemeService
 @using ExilumBBS.State
 
 @inject AppState appState
@@ -6,24 +8,52 @@
 @inject ITokenService tokenService
 @inject IUserService userService
 @inject IPopupService popupService
+@inject IThemeService themeService
+@inject ISettingService settingService
 @inject NavigationManager navigation
 
 @layout WithBackLayout
 
 <MCellGroup>
-    @if (userState.IsLogin)
-    {
-        <MCell Title="退出登录" OnClick="Logout"></MCell>
-    }
+    <MCellGroup Subheader="应用设置">
+        <MCell Title="暗黑模式" Value="@_theme"></MCell>
+    </MCellGroup>
+    <MCellGroup Subheader="其他设置">
+        @if (userState.IsLogin)
+        {
+            <MCell Title="退出登录" OnClick="Logout"></MCell>
+        }
+    </MCellGroup>
 </MCellGroup>
 
 
 @code {
+    private string _theme = string.Empty;
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
         // 设置AppBar标题
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
         appState.WithbackLayoutState.AppBarTitle = "设置";
+        switch (settingService.GetTheme())
+        {
+            case ExilumBBS.Services.ThemeService.Theme.System:
+                _theme = "跟随系统";
+                break;
+            case ExilumBBS.Services.ThemeService.Theme.Light:
+                _theme = "浅色模式";
+                break;
+            default:
+                _theme = "暗黑模式";
+                break;
+        }
+
+        await base.OnInitializedAsync();
     }
 
     private async Task Logout()

@@ -25,7 +25,25 @@ namespace ExilumBBS.Services
         /// <param name="url"></param>
         public void NavigateTo(string url)
         {
-            HistoryUrlList.Add(url);
+            var isJoin = true;
+            if (HistoryUrlList.Count > 0)
+            {
+                if (HistoryUrlList.Last() == url)
+                {
+                    isJoin = false;
+                }
+            }
+
+            if (HistoryUrlList.Count == 0 && url == "/")
+            {
+                isJoin = false;
+            }
+
+            if (isJoin)
+            {
+                HistoryUrlList.Add(url);
+            }
+
             _navigation.NavigateTo(url);
         }
 
@@ -41,9 +59,7 @@ namespace ExilumBBS.Services
             }
             else
             {
-#if ANDROID
                 Application.Current?.Quit();
-#endif
             }
 
         }

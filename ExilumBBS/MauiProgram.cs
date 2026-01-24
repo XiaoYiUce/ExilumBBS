@@ -1,4 +1,6 @@
 ﻿using ExilumBBS.Services;
+using ExilumBBS.Services.SettingService;
+using ExilumBBS.Services.ThemeService;
 using ExilumBBS.State;
 using ExilumBBS.Utils;
 using Masa.Blazor;
@@ -29,7 +31,8 @@ namespace ExilumBBS
             //状态机注入
             builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<PostListState>();
-
+            builder.Services.AddSingleton<IThemeService, ThemeService>();
+            builder.Services.AddSingleton<ISettingService, SettingService>();
 
             //注入Services
             builder.Services.AddScoped<ITokenService, TokenService>();

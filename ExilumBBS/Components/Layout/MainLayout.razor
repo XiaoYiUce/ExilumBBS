@@ -26,7 +26,7 @@
 
             <MSpacer></MSpacer>
 
-            <MButton Icon>
+            <MButton Icon OnClick="GoToSearch">
                 <MIcon>mdi-magnify</MIcon>
             </MButton>
 
@@ -238,12 +238,9 @@
             var bartitle = CategoryInfo.categoryList.Where(it => it.CategoryId == menu.Id)
             .First().CategoryName;
             appState.MainLayoutState.AppBarTitle = bartitle;
-            // 判断当前页面是否为首页，如果不是，则切换到对应页面
-            if (Navigation.Uri != "/")
-            {
-                //不是首页 返回回首页
-                navigationService.NavigateTo("/");
-            }
+
+            navigationService.NavigateTo("/");
+
         }
         else if (menu.Type == MenuType.NewTab)
         {
@@ -276,6 +273,11 @@
     private void GoToLogin()
     {
         navigationService.NavigateTo("/login");
+    }
+
+    private void GoToSearch()
+    {
+        navigationService.NavigateTo("/search");
     }
 
     void ValueChanged(StringNumber value)

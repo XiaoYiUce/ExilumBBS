@@ -1,0 +1,265 @@
+﻿@page "/search"
+@using ExilumBBS.Models.DTO.Search
+@using ExilumBBS.Models.Response.Hot
+@using ExilumBBS.Models.Response.Search
+@using ExilumBBS.State
+@using System.Text.Json
+@using System.Diagnostics
+
+@inject HttpTools httpTools
+@inject AppState appState
+
+@layout WithBackLayout
+
+<div class="searchbody" id="searchResultList">
+    <div style="height:64px;">
+        <MTextField @bind-Value="searchKeyword"
+                    Solo
+                    PrependInnerIcon="mdi-magnify"
+                    AppendIcon="mdi-arrow-right"
+                    OnEnter='() => PostSearch(1)'
+                    OnAppendClick='() => PostSearch(1)'
+                    Clearable>
+        </MTextField>
+    </div>
+
+    @if (string.IsNullOrEmpty(searchKeyword))
+    {
+        <div>
+            <MSubheader>热搜</MSubheader>
+            <div>
+                @foreach (var item in Hotwords)
+                {
+                    <MChip Class="ma-2"
+                           Color="primary"
+                           Outlined
+                           @onclick="() => HotwordSearch(item.Word)">
+                        @item.Word
+                    </MChip>
+                }
+            </div>
+        </div>
+    }
+    else if (SearchResults != null && SearchResults.Any())
+    {
+        <div>
+            <MList ThreeLine>
+                @foreach (var item in SearchResults)
+                {
+                    <MListItem>
+                        <div class="search-list">
+                            <div class="search-list-user">
+                                <MListItemAvatar>
+                                    <MImage Src="@item.UserAvatar"></MImage>
+                                </MListItemAvatar>
+                                <MListItemContent>
+                                    <MListItemTitle>
+                                        @item.UserNickName
+                                        <MChip Color="primary" Class="ml-2" Small>
+                                            @($"LV{item.UserLevel}")
+                                        </MChip>
+
+                                        @if (item.IsAdmin)
+                                        {
+                                            <MChip Small Class="ml-2"
+                                                   Color="primary">
+                                                官方
+                                            </MChip>
+                                        }
+                                    </MListItemTitle>
+                                    <MListItemSubtitle>@item.CreateTime</MListItemSubtitle>
+                                </MListItemContent>
+                            </div>
+                            <div class="search-list-content text-truncate ml-2">
+                                <div class="search-list-content-title text-truncate ">
+                                    @item.Title
+                                </div>
+                                <div class="search-list-content-content text-truncate grey--text text--lighten-1">
+                                    @item.Content
+                                </div>
+                            </div>
+                            <div class="d-flex align-center" @onclick:stopPropagation>
+                                <div class="ml-2">
+                                    <MIcon Color="default">mdi-comment-outline</MIcon>
+                                    <span class="text-caption text--secondary ml-1">@item.CommentNum</span>
+                                </div>
+                                <div class="ml-2">
+                                    <MButton Color="@(item.IsLike ? "primary" : "default")" Icon Size="small">
+                                        <MIcon>@(item.IsLike ? "mdi-thumb-up" : "mdi-thumb-up-outline")</MIcon>
+                                    </MButton>
+                                </div>
+                                <span class="text-caption text--secondary ml-1">@item.LikeNum</span>
+                            </div>
+                        </div>
+                    </MListItem>
+
+                    <MDivider></MDivider>
+                }
+            </MList>
+            <MInfiniteScroll OnLoad="@InfiftyLoad"
+                             Parent="#searchResultList">
+            </MInfiniteScroll>
+        </div>
+    }
+</div>
+
+<style>
+    .searchbody {
+        display: flex;
+        overflow-y: scroll;
+        height: calc(100vh - 64px);
+        margin: 0rem 1rem;
+        padding-top: 1rem;
+        flex-direction: column;
+    }
+
+        .searchbody::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Edge */
+        }
+
+    .search-list {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .search-list-user {
+        display: flex
+    }
+</style>
+
+@code {
+    private string _searchKeyword = string.Empty;
+
+    private string searchKeyword
+    {
+        get => _searchKeyword;
+        set
+        {
+            if (_searchKeyword != value)
+            {
+                _searchKeyword = value;
+                // 当关键词变化时，立即清空结果并重置状态
+                SearchResults.Clear();
+                PageNum = 1;
+                Total = 0;
+                LastSearchKeyword = string.Empty; // 确保下次 PostSearch 视为新搜索
+            }
+        }
+    }
+
+    /// <summary>
+    /// 搜索完成后是否有数据
+    /// </summary>
+    private bool hasResponse { get; set; } = true;
+    private List<HotwordItem> Hotwords = [];
+    private List<SearchItem> SearchResults = [];
+
+    /// <summary>
+    /// 搜索类型
+    /// </summary>
+    private int SearchType { get; set; } = 1;
+
+    private long PageNum { get; set; } = 1;
+
+    private long PageSize { get; set; } = 10;
+
+    private long Total { get; set; }
+
+    private long TotalPages => (int)Math.Ceiling((double)Total / PageSize);
+
+    private string LastSearchKeyword { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        appState.WithbackLayoutState.AppBarTitle = "搜索";
+        await GetHotWord();
+        await base.OnInitializedAsync();
+    }
+
+    /// <summary>
+    /// 获取热词
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetHotWord()
+    {
+        var response = await httpTools.GetAsync("/community/search/hot_word");
+        if (response != null && response.Code == 0)
+        {
+            if (response.Data.HasValue)
+            {
+                var hotWordResponse = response.Data.Value.Deserialize<HotwordResponse>();
+                if (hotWordResponse != null)
+                {
+                    Hotwords = hotWordResponse.List;
+                }
+            }
+        }
+    }
+
+    private async Task InfiftyLoad(InfiniteScrollLoadEventArgs args)
+    {
+        await PostSearch(SearchType);
+        args.Status = (PageNum > TotalPages) ? InfiniteScrollLoadStatus.Empty : InfiniteScrollLoadStatus.Ok;
+
+    }
+
+    /// <summary>
+    /// 点击热词后搜索
+    /// </summary>
+    /// <returns></returns>
+    private async Task HotwordSearch(string hotword)
+    {
+        searchKeyword = hotword;
+        await PostSearch(1);
+    }
+
+    /// <summary>
+    /// 搜索
+    /// </summary>
+    /// <param name="searchType"></param>
+    /// <returns></returns>
+    private async Task PostSearch(int searchType)
+    {
+        // 如果搜索关键词变化，重置分页和结果
+        if (!searchKeyword.Equals(LastSearchKeyword))
+        {
+            PageNum = 1;
+            SearchResults.Clear();
+            Total = 0;
+        }
+
+        if (PageNum <= TotalPages || (SearchResults.Count == 0 && PageNum == 1))
+        {
+            SearchType = searchType;
+            var response = await httpTools.PostAsync("/community/search/info",
+            new SearchDTO() { Content = searchKeyword, PageNum = this.PageNum, PageSize = this.PageSize, SearchType = searchType });
+            if (response != null && response.Code == 0)
+            {
+                if (response.Data.HasValue)
+                {
+                    var searchResultResponse = response.Data.Value.Deserialize<SearchResponse>();
+                    if (searchResultResponse != null)
+                    {
+                        PageNum = PageNum + 1;
+                        Total = searchResultResponse.Total;
+                        SearchResults.AddRange(searchResultResponse.List);
+                        LastSearchKeyword = searchKeyword;
+                        if (Total == 0)
+                        {
+                            hasResponse = false;
+                        }
+                        else
+                        {
+                            hasResponse = true;
+                        }
+                    }
+                }
+                else
+                {
+                    // 错误处理
+                }
+            }
+        }
+    }
+}

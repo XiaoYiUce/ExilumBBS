@@ -170,6 +170,7 @@
             }
         }
     }
+
     /// <summary>
     /// 触底加载
     /// </summary>
@@ -291,8 +292,10 @@
     {
         navigationService.Initialize(Navigation);
         appState.MainLayoutState.FilterVisable = true;
-        var bartitle = CategoryInfo.categoryList.Where(it => it.CategoryId == postListState.CategoryId)
-        .First().CategoryName;
+        var bartitle = CategoryInfo
+                       .categoryList
+                       .Where(it => it.CategoryId == postListState.CategoryId)
+                       .First().CategoryName;
 
         appState.MainLayoutState.AppBarTitle = bartitle;
         postListState.PropertyChanged += OnStateChanged;
@@ -300,12 +303,6 @@
         showPage = true;
         Debug.WriteLine("Home初始化");
         await base.OnInitializedAsync();
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
-        Debug.WriteLine("onparameter");
     }
 
     /// <summary>
