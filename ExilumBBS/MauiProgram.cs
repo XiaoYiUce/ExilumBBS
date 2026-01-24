@@ -47,6 +47,9 @@ namespace ExilumBBS
                 options.ConfigureTheme(theme =>
                 {
                     theme.Themes.Light.Primary = "#FF5722";
+                    theme.Themes.Dark.Primary = "#FF5722";
+                    theme.Themes.Light.OnPrimary = "#FFFFFF";
+                    theme.Themes.Dark.OnPrimary = "#FFFFFF";
                 });
             }, ServiceLifetime.Singleton);
             // 注入用户状态信息类

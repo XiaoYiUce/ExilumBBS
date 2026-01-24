@@ -6,32 +6,90 @@
 @using System.Diagnostics
 @using System.Text.Json
 @using ExilumBBS.Models.Response
+@using ExilumBBS.State
 @layout WithBackLayout
 
+@inject AppState appstate
 @inject HttpTools httpTools
 @inject ITokenService tokenService
 @inject IPopupService popupService
 @inject NavigationManager Navigation
 @inject INavigationService navigationService
 
-<MTextField @bind-Value="userName"
-            Type="text"
-            Label="用户名"
-            Required
-            Hint="请输入用户名">
-</MTextField>
+<div class="login">
+    @if (loginType == LoginType.UserName)
+    {
+        <MTextField @bind-Value="userName"
+                    Solo
+                    PrependInnerIcon="mdi-account"
+                    Type="text"
+                    Label="用户名"
+                    Required
+                    Hint="请输入用户名">
+        </MTextField>
 
-<MTextField @bind-Value="password"
-            AppendIcon="@(showPassword ? "mdi-eye" : "mdi-eye-off")"
-            Type="@(showPassword ? "text" : "password")"
-            Required
-            Label="密码"
-            Hint="请输入密码"
-            OnAppendClick="() => showPassword = !showPassword">
-</MTextField>
+        <MTextField @bind-Value="password"
+                    Solo
+                    PrependInnerIcon="mdi-key"
+                    AppendIcon="@(showPassword ? "mdi-eye" : "mdi-eye-off")"
+                    Type="@(showPassword ? "text" : "password")"
+                    Required
+                    Label="密码"
+                    Hint="请输入密码"
+                    OnAppendClick="() => showPassword = !showPassword">
+        </MTextField>
+    }
+    else
+    {
+        <MTextField @bind-Value="userName"
+                    Solo
+                    PrependInnerIcon="mdi-account"
+                    Type="text"
+                    Label="手机号"
+                    Required
+                    Hint="请输入手机号">
+        </MTextField>
 
-<MButton OnClick="LoginAsync">登录</MButton>
-<MButton>短信登录</MButton>
+        <div style="display:flex;gap:1rem;justify-content:center;">
+            <MTextField @bind-Value="password"
+                        Solo
+                        PrependInnerIcon="mdi-key"
+                        Type="number"
+                        Required
+                        Label="验证码"
+                        Hint="请输入验证码"
+                        OnAppendClick="() => showPassword = !showPassword">
+            </MTextField>
+            <MButton OnClick="SendMsg"
+                     Disabled="isSendingCode">
+                @(isSendingCode ? $"{countdownSeconds}秒后重新获取" : "发送验证码")
+            </MButton>
+        </div>
+
+    }
+
+    <div class="login-button-list">
+        <MButton OnClick="LoginAsync">登录</MButton>
+        <MButton OnClick="SwitchLoginMethod">@LoginMethodTip</MButton>
+    </div>
+
+</div>
+
+<style>
+    .login {
+        display: flex;
+        flex-direction: column;
+        margin: 0 1rem;
+        padding-top: 1rem;
+    }
+
+    .login-button-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+</style>
+
 @code {
     // 中国大陆手机号正则（11位，以13/14/15/17/18/19开头）
     private static readonly Regex PhoneRegex = new Regex(
@@ -46,55 +104,169 @@
     private string userName = "";
     private string password = "";
 
+    private bool isSendingCode = false; // 是否正在倒计时
+    private int countdownSeconds = 60;  // 倒计时秒数
+    private Timer? countdownTimer;       // 计时器
+
+    //登录方式
+    private LoginType loginType = LoginType.UserName;
+
+    private string LoginMethodTip => loginType == LoginType.UserName ? "短信登录" : "账户密码登录";
+
+    private enum LoginType
+    {
+        UserName,
+        Message
+    }
+
     private bool showPassword = false;
 
     protected override Task OnInitializedAsync()
     {
+        appstate.WithbackLayoutState.AppBarTitle = "登录";
         navigationService.Initialize(Navigation);
         return base.OnInitializedAsync();
     }
 
-    private async Task LoginAsync()
+    private async Task SwitchLoginMethod()
     {
-        if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
+        if (loginType == LoginType.UserName)
         {
-            var cryptPasswd = "";
-            using (MD5 md5 = MD5.Create())
-            {
-                byte[] inputBytes = Encoding.UTF8.GetBytes(password);
-                byte[] hashBytes = md5.ComputeHash(inputBytes);
+            loginType = LoginType.Message;
+        }
+        else
+        {
+            loginType = LoginType.UserName;
+        }
+    }
 
-                // 转换为十六进制字符串（小写）
-                StringBuilder sb = new StringBuilder();
-                foreach (byte b in hashBytes)
-                {
-                    sb.Append(b.ToString("x2")); // "x2" 表示两位小写十六进制
-                }
-                cryptPasswd = sb.ToString();
-            }
-
-            var type = "";
-
+    private async Task SendMsg()
+    {
+        if (!string.IsNullOrEmpty(userName))
+        {
             if (PhoneRegex.IsMatch(userName))
             {
-                type = "phone";
+                var response = await httpTools.PostAsync("/login/send_msg", new { account_name = userName, graph_code = "" });
+                if (response != null && response.Code == 0)
+                {
+                    // 启动倒计时
+                    isSendingCode = true;
+                    countdownSeconds = 60;
+
+                    // 使用 StateHasChanged 确保 UI 更新
+                    StateHasChanged();
+
+                    // 创建一次性计时器，每秒触发一次
+                    countdownTimer?.Dispose(); // 防止重复创建
+                    countdownTimer = new Timer(_ =>
+                    {
+                        InvokeAsync(() =>
+                        {
+                            countdownSeconds--;
+                            if (countdownSeconds <= 0)
+                            {
+                                isSendingCode = false;
+                                countdownTimer?.Dispose();
+                                countdownTimer = null;
+                            }
+                            StateHasChanged(); // 安全地触发 UI 刷新
+                        });
+                    }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                }
+            }
+            else
+            {
+                popupService.ShowErrorToast("请输入正确的手机号");
+            }
+        }
+        else
+        {
+            popupService.ShowErrorToast("请输入手机号");
+        }
+    }
+
+    private async Task LoginAsync()
+    {
+        if (loginType == LoginType.UserName)
+        {
+            if (!string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(password))
+            {
+                var cryptPasswd = "";
+                using (MD5 md5 = MD5.Create())
+                {
+                    byte[] inputBytes = Encoding.UTF8.GetBytes(password);
+                    byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                    // 转换为十六进制字符串（小写）
+                    StringBuilder sb = new StringBuilder();
+                    foreach (byte b in hashBytes)
+                    {
+                        sb.Append(b.ToString("x2")); // "x2" 表示两位小写十六进制
+                    }
+                    cryptPasswd = sb.ToString();
+                }
+
+                var type = "";
+
+                if (PhoneRegex.IsMatch(userName))
+                {
+                    type = "phone";
+                }
+
+                if (EmailRegex.IsMatch(userName))
+                {
+                    type = "mail";
+                }
+
+                var loginDTO = new LoginPostDTO()
+                {
+                    AccountName = userName,
+                    Passwd = cryptPasswd,
+                    Source = type
+                };
+
+                var response = await httpTools.PostAsync("/login/account", loginDTO, true);
+
+                if (response != null && response.Code == 0 && response.Data != null)
+                {
+                    var resNode = response.Data.Value.TryGetProperty("account", out JsonElement resElement);
+
+                    var resData = resElement.Deserialize<LoginSuccessResponse>();
+
+                    if (resData != null)
+                    {
+                        await tokenService.SetTokenAsync(resData.Token);
+                        await popupService.EnqueueSnackbarAsync("登录成功", AlertTypes.Success);
+                        await Task.Delay(1000);
+                        navigationService.NavigateTo("/");
+                    }
+                }
+                else if (response != null && response.Code == -1)
+                {
+                    popupService.ShowErrorToast("用户名或密码错误");
+                }
+            }
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(userName))
+            {
+                popupService.ShowErrorToast("请输入手机号!");
             }
 
-            if (EmailRegex.IsMatch(userName))
+            if (string.IsNullOrEmpty(password))
             {
-                type = "mail";
+                popupService.ShowErrorToast("请输入密码");
             }
 
-            var loginDTO = new LoginPostDTO()
+            if (!PhoneRegex.IsMatch(userName))
             {
-                AccountName = userName,
-                Passwd = cryptPasswd,
-                Source = type
-            };
+                popupService.ShowErrorToast("请输入正确的手机号!");
+            }
 
-            var response = await httpTools.PostAsync("/login/account", loginDTO, true);
+            var response = await httpTools.PostAsync("/login/sms", new { account_name = userName, code = password });
 
-            if (response != null && response.Code == 0 && response.Data != null)
+            if (response != null && response.Code == 0)
             {
                 var resNode = response.Data.Value.TryGetProperty("account", out JsonElement resElement);
 
@@ -110,7 +282,7 @@
             }
             else if (response != null && response.Code == -1)
             {
-                popupService.ShowErrorToast("用户名或密码错误");
+                popupService.ShowErrorToast(response.Message);
             }
         }
     }
