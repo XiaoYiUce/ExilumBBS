@@ -1,0 +1,279 @@
+﻿@page "/scorecenter"
+@using ExilumBBS.Models.Entity
+@using ExilumBBS.Models.Response.Point
+@using ExilumBBS.State
+@using System.Text.Json
+@using System.Diagnostics
+
+@layout WithBackLayout
+
+@inject AppState appState
+@inject HttpTools httpTools
+@inject IUserService userService
+
+<div style="height:calc(100vh - 64px);overflow-y:scroll;">
+    @if (currentUser != null)
+    {
+        <MList>
+            <MListItem>
+                <div class="user-info">
+                    <div class="user-info-part1">
+                        <div class="user-avatar">
+                            <MListItemAvatar>
+                                <MImage Src="@currentUser.Avatar"></MImage>
+                            </MListItemAvatar>
+                            @($"LV.{currentUser.Level}")
+                        </div>
+
+                        <MListItemContent>
+                            <MListItemTitle class="text-h6">
+                                @currentUser.NickName
+                            </MListItemTitle>
+
+                            <MProgressLinear Height="6" Value="ExpProgress">
+                            </MProgressLinear>
+                            <p>@($"{currentUser.Exp}/{currentUser.NextLvExp}社区经验")</p>
+                            <p>@($"距升级至Lv.{currentUser.Level + 1}还需{currentUser.NextLvExp - currentUser.Exp}")</p>
+
+                        </MListItemContent>
+                    </div>
+                    <div>
+                        我的社区积分：@currentUser.Score
+                    </div>
+
+                </div>
+
+            </MListItem>
+        </MList>
+
+        <div class="main-content mt-4">
+            @if (monthSigninResponse != null)
+            {
+                <MCard Outlined>
+                    <MCardTitle>
+                        <span>每日签到</span>
+                    </MCardTitle>
+                    <div class="ml-4">
+                        <span>本轮奖励时间：@($"{monthSigninResponse.StartDate}到{monthSigninResponse.EndDate}")</span>
+                    </div>
+                    <div class="daily-signin-container ml-4 mb-4">
+                        @for (int i = 0; i < monthSigninResponse.List.Count; i++)
+                        {
+                            var item = monthSigninResponse.List[i];
+
+                            <div class="gift">
+                                <div class="gift-img">
+                                    <img src="@item.ItemPic" />
+                                </div>
+                                @if (i < monthSigninResponse.SignInDays)
+                                {
+                                    <span class="ac"></span>
+                                }
+                                else
+                                {
+                                    <span class=""></span>
+                                }
+
+                                <p>@($"第{i + 1}天")</p>
+
+                            </div>
+                        }
+                    </div>
+                </MCard>
+            }
+
+            @if (taskResponse != null)
+            {
+                <MCard Outlined>
+                    <MCardTitle>
+                        <span>每日任务</span>
+                    </MCardTitle>
+                    <div class="task-list ml-4 mb-4">
+                        @foreach (var item in taskResponse.DailyTask)
+                        {
+                            <div class="item">
+                                <div class="item-title">@(item.TaskName)</div>
+                                <div class="item-context">@(item.TaskContext)</div>
+                            </div>
+                        }
+                    </div>
+                </MCard>
+
+                <MCard Outlined Class="mb-2">
+                    <MCardTitle>
+                        <span>更多任务</span>
+                    </MCardTitle>
+                    <div class="task-list ml-4 mb-4">
+                        @foreach (var item in taskResponse.MoreTask)
+                        {
+                            <div class="item">
+                                <div class="item-title">@(item.TaskName)</div>
+                                <div class="item-context">@(item.TaskContext)</div>
+                            </div>
+                        }
+                    </div>
+                </MCard>
+            }
+
+        </div>
+
+    }
+</div>
+
+
+<style>
+    .task-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .task-list .item {
+        }
+
+            .task-list .item .item-title {
+                font-size: 1.5rem;
+            }
+
+            .task-list .item .item-context {
+                color: #b2b1b1;
+            }
+
+    .gift span {
+        display: block;
+        width: 100%;
+        height: .3rem;
+        background-color: #999;
+        margin: .05rem 0 .1rem;
+    }
+
+    .gift .ac {
+        background-color: #f26c1c;
+    }
+
+    .gift p {
+        width: 100%;
+        text-align: center;
+        color: #b2b1b1;
+        font-size: 1rem;
+        line-height: .2rem;
+        margin-top: 1rem;
+    }
+
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        margin: 0 1rem;
+        gap: 1rem;
+    }
+
+    .user-avatar {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .user-info {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .user-info-part1 {
+        display: flex;
+    }
+
+    .daily-signin-container {
+        overflow-x: scroll;
+        width: 92%;
+        display: flex;
+    }
+
+        .daily-signin-container img {
+            width: 5rem;
+            height: 5rem;
+        }
+
+        .daily-signin-container::-webkit-scrollbar {
+            /* display: none; */
+        }
+</style>
+
+@code {
+    private UserEntity? currentUser { get; set; }
+
+    private MonthSigninResponse? monthSigninResponse { get; set; }
+
+    private TaskResponse? taskResponse { get; set; }
+
+    /// <summary>
+    /// 社区经验进度
+    /// </summary>
+    private int ExpProgress => currentUser is not null && currentUser.NextLvExp > 0
+        ? (int)((long)currentUser.Exp * 100 / currentUser.NextLvExp)
+        : 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        appState.WithbackLayoutState.AppBarTitle = "积分中心";
+        await GetUserProfile();
+        await GetMonthSignStatus();
+        await GetCurrentTaskList();
+        await base.OnInitializedAsync();
+    }
+
+    /// <summary>
+    /// 获取用户信息
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetUserProfile()
+    {
+        var result = await httpTools.PostAsync("community/member/info", null);
+        if (result != null && result.Data != null)
+        {
+            var userNode = result.Data.Value.TryGetProperty("user", out JsonElement userElement);
+
+            var user = userElement.Deserialize<UserEntity>();
+
+            if (user != null)
+            {
+                await userService.CreateOrUpdateUserProfile(user);
+                currentUser = user;
+                StateHasChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 获取本月签到状况
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetMonthSignStatus()
+    {
+        var response = await httpTools.GetAsync("/community/task/get_month_sign_in_status");
+        if (response != null && response.Code == 0)
+        {
+            if (response.Data.HasValue)
+            {
+                var monthsignin = response.Data.Value.Deserialize<MonthSigninResponse>();
+                monthSigninResponse = monthsignin;
+            }
+
+        }
+    }
+
+    /// <summary>
+    /// 获取当前任务列表
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetCurrentTaskList()
+    {
+        var response = await httpTools.GetAsync("/community/task/get_current_task_list");
+        if (response != null && response.Code == 0)
+        {
+            if (response.Data.HasValue)
+            {
+                taskResponse = response.Data.Value.Deserialize<TaskResponse>();
+            }
+        }
+    }
+}

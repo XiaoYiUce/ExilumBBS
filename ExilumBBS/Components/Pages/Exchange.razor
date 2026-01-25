@@ -8,6 +8,7 @@
 @inject UserState userState
 @inject HttpTools httpTools
 @inject NavigationManager navigation
+@inject INavigationService navigationService
 @inject IPopupService popupService
 @inject IUserService userService
 
@@ -16,7 +17,7 @@
     {
         <div class="exchangeToolBar">
             <MButton OnClick="() => GoToScoreLog()">@($"积分:{User.Score}")</MButton>
-            <MButton>积分中心</MButton>
+            <MButton OnClick='() => navigationService.NavigateTo("/scorecenter")'>积分中心</MButton>
         </div>
     }
 
@@ -133,7 +134,7 @@
 
     private void GoToScoreLog()
     {
-        navigation.NavigateTo("/exchange/scorelog");
+        navigationService.NavigateTo("/exchange/scorelog");
     }
 
     private async Task GetUserInfoAsync()
@@ -158,6 +159,7 @@
     {
         appState.MainLayoutState.AppBarTitle = "兑换";
         appState.MainLayoutState.FilterVisable = false;
+        navigationService.Initialize(navigation);
         await base.OnInitializedAsync();
         await GetExchangeItemAsync();
         await GetUserInfoAsync();

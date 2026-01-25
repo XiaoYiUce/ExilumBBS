@@ -93,6 +93,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="Components\Components\Editor\" />
 		<Folder Include="wwwroot\js\" />
 	</ItemGroup>
 

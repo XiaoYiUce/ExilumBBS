@@ -36,7 +36,7 @@
                 <MSubheader>帖子</MSubheader>
                 @foreach (var item in PostList)
                 {
-                    <MListItem OnClick="() => ToTopic(item.TopicId)">
+                    <MListItem Link>
                         <div class="home-list">
                             <div class="home-list-user">
                                 <MListItemAvatar>
@@ -60,7 +60,7 @@
                                     <MListItemSubtitle>@item.CreateTime</MListItemSubtitle>
                                 </MListItemContent>
                             </div>
-                            <div class="home-list-content text-truncate ml-2">
+                            <div class="home-list-content text-truncate ml-2" @onclick="() => ToTopic(item.TopicId)">
                                 <div class="home-list-content-title text-truncate ">
                                     @item.Title
                                 </div>
