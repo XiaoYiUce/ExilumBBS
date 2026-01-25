@@ -23,7 +23,7 @@ namespace ExilumBBS.Services
         /// 跳转到指定页
         /// </summary>
         /// <param name="url"></param>
-        public void NavigateTo(string url)
+        public void NavigateTo(string url, bool forceload = false)
         {
             var isJoin = true;
             if (HistoryUrlList.Count > 0)
@@ -44,7 +44,14 @@ namespace ExilumBBS.Services
                 HistoryUrlList.Add(url);
             }
 
-            _navigation.NavigateTo(url);
+            if (forceload)
+            {
+                _navigation.NavigateTo(url, true);
+            }
+            else
+            {
+                _navigation.NavigateTo(url);
+            }
         }
 
         /// <summary>

@@ -2,6 +2,7 @@
 @using ExilumBBS.Models.DTO.Search
 @using ExilumBBS.Models.Response.Hot
 @using ExilumBBS.Models.Response.Search
+@using ExilumBBS.Services.StateService
 @using ExilumBBS.State
 @using System.Text.Json
 @using System.Diagnostics
@@ -9,11 +10,15 @@
 @inject HttpTools httpTools
 @inject AppState appState
 
+@inject IJSRuntime JS
 @inject NavigationManager navigation
 
+@inject IStateService stateService
 @inject INavigationService navigationService
 
 @layout WithBackLayout
+
+@implements IDisposable
 
 <div class="searchbody" id="searchResultList">
     <div style="height:64px;">
@@ -133,6 +138,7 @@
 </style>
 
 @code {
+    private IJSObjectReference? jsModule;
     private string _searchKeyword = string.Empty;
 
     private string searchKeyword
@@ -174,10 +180,45 @@
 
     private string LastSearchKeyword { get; set; } = string.Empty;
 
+    private long ScrollY { get; set; } = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/jstools.js");
+        }
+
+        if (jsModule != null && ScrollY != 0)
+        {
+            await jsModule.InvokeVoidAsync("setScrollPosition", "searchResultList", ScrollY);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         appState.WithbackLayoutState.AppBarTitle = "搜索";
-        await GetHotWord();
+        var state = stateService.GetSearchStatus();
+        if (state != null)
+        {
+            this._searchKeyword = state.SearchKeyword;
+            this.hasResponse = state.HasResponse;
+            this.Hotwords = state.Hotwords;
+            this.SearchResults = state.SearchResults;
+            this.SearchType = state.SearchType;
+            this.PageNum = state.PageNum;
+            this.PageSize = state.PageSize;
+            this.Total = state.Total;
+            this.LastSearchKeyword = state.LastSearchKeyword;
+            this.ScrollY = state.ScrollY;
+        }
+        else
+        {
+            await GetHotWord();
+        }
+
         navigationService.Initialize(navigation);
         await base.OnInitializedAsync();
     }
@@ -186,8 +227,29 @@
     /// 跳转至帖子
     /// </summary>
     /// <param name="topicId"></param>
-    private void ToTopic(long topicId)
+    private async Task ToTopic(long topicId)
     {
+        var scrollTop = 0;
+        if (jsModule != null)
+        {
+            scrollTop = await jsModule.InvokeAsync<int>("getScrollPosition", "searchResultList");
+        }
+
+        var stat = new SearchStatus()
+        {
+            SearchKeyword = this._searchKeyword,
+            HasResponse = this.hasResponse,
+            Hotwords = this.Hotwords,
+            SearchResults = this.SearchResults,
+            SearchType = this.SearchType,
+            PageNum = this.PageNum,
+            PageSize = this.PageSize,
+            Total = this.Total,
+            LastSearchKeyword = this.LastSearchKeyword,
+            ScrollY = scrollTop
+        };
+
+        stateService.SetSearchStatus(stat);
         navigationService.NavigateTo($"/post/{topicId}");
     }
 
@@ -231,6 +293,14 @@
     {
         searchKeyword = hotword;
         await PostSearch(1);
+    }
+
+    public async void Dispose()
+    {
+        if (jsModule != null)
+        {
+            await jsModule.DisposeAsync();
+        }
     }
 
     /// <summary>

@@ -44,17 +44,17 @@
         <MList TwoLine>
             @foreach (var item in commentMessageItems)
             {
-                    <MListItem>
-                        <MListItemAvatar>
-                            <MImage Src="@item.AvatarUrl"></MImage>
-                        </MListItemAvatar>
+                <MListItem>
+                    <MListItemAvatar>
+                        <MImage Src="@item.AvatarUrl"></MImage>
+                    </MListItemAvatar>
 
-                        <MListItemContent>
-                            <MListItemTitle>@((MarkupString)item.Title)</MListItemTitle>
-                            <MListItemSubtitle>@((MarkupString)item.Content)</MListItemSubtitle>
+                    <MListItemContent>
+                        <MListItemTitle>@((MarkupString)item.Title)</MListItemTitle>
+                        <MListItemSubtitle>@((MarkupString)item.Content)</MListItemSubtitle>
                         <MListItemSubtitle><div class="logtime">@item.LogTime</div></MListItemSubtitle>
-                        </MListItemContent>
-                    </MListItem>
+                    </MListItemContent>
+                </MListItem>
             }
         </MList>
 
@@ -122,9 +122,9 @@
 }
 
 <style>
-    .logtime{
-        display:flex;
-        justify-content:flex-end;
+    .logtime {
+        display: flex;
+        justify-content: flex-end;
     }
 </style>
 
@@ -182,7 +182,7 @@
         // await GetMessageListAsync();
     }
 
-    //// <summary>
+    /// <summary>
     /// 获取未读消息数字
     /// </summary>
     /// <returns></returns>

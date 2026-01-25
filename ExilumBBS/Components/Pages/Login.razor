@@ -270,17 +270,21 @@
 
             if (response != null && response.Code == 0)
             {
-                var resNode = response.Data.Value.TryGetProperty("account", out JsonElement resElement);
-
-                var resData = resElement.Deserialize<LoginSuccessResponse>();
-
-                if (resData != null)
+                if (response.Data.HasValue)
                 {
-                    await tokenService.SetTokenAsync(resData.Token);
-                    await popupService.EnqueueSnackbarAsync("登录成功", AlertTypes.Success);
-                    await Task.Delay(1000);
-                    navigationService.NavigateTo("/");
+                    var resNode = response.Data.Value.TryGetProperty("account", out JsonElement resElement);
+
+                    var resData = resElement.Deserialize<LoginSuccessResponse>();
+
+                    if (resData != null)
+                    {
+                        await tokenService.SetTokenAsync(resData.Token);
+                        await popupService.EnqueueSnackbarAsync("登录成功", AlertTypes.Success);
+                        await Task.Delay(1000);
+                        navigationService.NavigateTo("/");
+                    }
                 }
+
             }
             else if (response != null && response.Code == -1)
             {

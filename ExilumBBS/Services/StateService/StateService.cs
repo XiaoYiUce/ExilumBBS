@@ -9,12 +9,22 @@ namespace ExilumBBS.Services.StateService
     {
         private HomeHistoryStatus? _homeHistoryStatus = null;
 
+        private SearchStatus? _searchStatus = null;
+
         /// <summary>
         /// 清空首页历史状态
         /// </summary>
         public void ClearHomeHistoryStatus()
         {
             _homeHistoryStatus = null;
+        }
+
+        /// <summary>
+        /// 清空搜索页历史状态
+        /// </summary>
+        public void ClearSearchStatus()
+        {
+            _searchStatus = null;
         }
 
         /// <summary>
@@ -27,12 +37,30 @@ namespace ExilumBBS.Services.StateService
         }
 
         /// <summary>
+        /// 获取搜索页状态
+        /// </summary>
+        /// <returns></returns>
+        public SearchStatus? GetSearchStatus()
+        {
+            return _searchStatus;
+        }
+
+        /// <summary>
         /// 设置首页历史状态
         /// </summary>
         /// <param name="status"></param>
         public void SetHomeHistoryStatus(HomeHistoryStatus status)
         {
             _homeHistoryStatus = status;
+        }
+
+        /// <summary>
+        /// 设置搜索页历史状态
+        /// </summary>
+        /// <param name="status"></param>
+        public void SetSearchStatus(SearchStatus status)
+        {
+            _searchStatus = status;
         }
     }
 }

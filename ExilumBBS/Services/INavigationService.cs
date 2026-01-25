@@ -14,7 +14,7 @@ namespace ExilumBBS.Services
         /// 跳转到指定路由
         /// </summary>
         /// <param name="url"></param>
-        public void NavigateTo(string url);
+        public void NavigateTo(string url, bool forceload = false);
 
         /// <summary>
         /// 返回上一层路由

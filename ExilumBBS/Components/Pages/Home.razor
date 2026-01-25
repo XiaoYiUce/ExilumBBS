@@ -309,6 +309,7 @@
         PubTime = 0;
         ReplyTime = 0;
         HotValue = 0;
+        ScrollY = 0;
         NextPage = true;
 
         //页面拉回顶部
@@ -326,7 +327,18 @@
     protected override async Task OnInitializedAsync()
     {
         navigationService.Initialize(Navigation);
+
+        appState.MainLayoutState.FilterVisable = true;
+        var bartitle = CategoryInfo
+                       .categoryList
+                       .Where(it => it.CategoryId == postListState.CategoryId)
+                       .First().CategoryName;
+
+        appState.MainLayoutState.AppBarTitle = bartitle;
+        postListState.PropertyChanged += OnStateChanged;
+
         var stat = stateService.GetHomeHistoryStatus();
+
         if (stat != null)
         {
             // 恢复之前的浏览状态
@@ -341,17 +353,12 @@
             this.ScrollY = stat.ScrollY;
             stateService.ClearHomeHistoryStatus();
         }
+        else
+        {
+            await PostTop();
+            showPage = true;
+        }
 
-        appState.MainLayoutState.FilterVisable = true;
-        var bartitle = CategoryInfo
-                       .categoryList
-                       .Where(it => it.CategoryId == postListState.CategoryId)
-                       .First().CategoryName;
-
-        appState.MainLayoutState.AppBarTitle = bartitle;
-        postListState.PropertyChanged += OnStateChanged;
-        await PostTop();
-        showPage = true;
         Debug.WriteLine("Home初始化");
         await base.OnInitializedAsync();
     }
