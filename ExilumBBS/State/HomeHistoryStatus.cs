@@ -30,7 +30,7 @@ namespace ExilumBBS.State
         /// </summary>
         public bool NextPage { get; set; } = true;
 
-        public long ScrollY { get; set; }
+        public double ScrollY { get; set; }
 
         #region 分页参数
         public long LastTid { get; set; } = 0;

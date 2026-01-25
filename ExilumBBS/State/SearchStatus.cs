@@ -44,6 +44,6 @@ namespace ExilumBBS.State
 
         public string LastSearchKeyword { get; set; } = string.Empty;
 
-        public long ScrollY { get; set; }
+        public double ScrollY { get; set; }
     }
 }

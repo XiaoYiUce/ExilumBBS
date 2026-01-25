@@ -142,7 +142,7 @@
     /// <summary>
     /// 用于下次恢复滚动位置
     /// </summary>
-    private long ScrollY = 0;
+    private double ScrollY = 0;
 
     /// <summary>
     /// 前往帖子详情页
@@ -150,10 +150,10 @@
     /// <param name="topicId"></param>
     private async void ToTopic(long topicId)
     {
-        var scrollTop = 0;
+        double scrollTop = 0;
         if (jsModule != null)
         {
-            scrollTop = await jsModule.InvokeAsync<int>("getScrollPosition", "infinite-scroll-usage");
+            scrollTop = await jsModule.InvokeAsync<double>("getScrollPosition", "infinite-scroll-usage");
         }
 
         Debug.WriteLine($"scrollTop:{scrollTop}");
