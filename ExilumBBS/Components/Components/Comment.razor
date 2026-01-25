@@ -162,84 +162,88 @@
     }
 
 </MList>
-<MDialog @bind-Value="showCommentDialog"
-         Fullscreen
-         Transition="dialog-bottom-transition">
-    <ChildContent>
-        <MCard>
-            <MToolbar>
-                <MButton Icon
-                         OnClick="() => showCommentDialog = false">
-                    <MIcon>mdi-close</MIcon>
-                </MButton>
-                <MToolbarTitle>评论</MToolbarTitle>
-                <MSpacer></MSpacer>
-            </MToolbar>
-            <MList Dense 
-                   Class="overflow-auto"
-                   Style="margin: 0 auto;height:calc(100vh - 64px)">
-                @if (showCommentDialog == true)
-                {
-                    @foreach (var item in ReplyList)
-                    {
-                        <MLazy Options="new IntersectionObserverInit(0.5)">
-                            <MListItem>
-                                <div class="topic-userinfo">
-                                    <div class="comment-userinfo">
-                                        <MAvatar size="32" Class="mr-2">
-                                            <MImage Src="@item.UserAvatar"></MImage>
-                                        </MAvatar>
-                                        <div>
-                                            <span class="font-weight-medium deep-orange--text">
-                                                @item.UserNickName
-                                            </span>
-                                            @if (!string.IsNullOrEmpty(item.ReplyTo))
-                                            {
-                                                <span class="ml-1">回复</span>
-                                                <span class="ml-1 deep-orange--text">
-                                                    @item.ReplyTo
-                                                </span>
-                                            }
-                                            <span>
-                                                :
-                                            </span>
-                                            @if (item.IsAuthor)
-                                            {
-                                                <MChip Small
-                                                       Class="ml-2"
-                                                       Color="primary">
-                                                    楼主
-                                                </MChip>
-                                            }
 
-                                            @if (item.IsAdmin)
-                                            {
-                                                <MChip Small
-                                                       Class="ml-2"
-                                                       Color="primary">
-                                                    官方
-                                                </MChip>
-                                            }
+@if (showCommentDialog == true)
+{
+    <MDialog @bind-Value="showCommentDialog"
+             Fullscreen
+             Transition="dialog-bottom-transition">
+        <ChildContent>
+            <MCard>
+                <MToolbar>
+                    <MButton Icon
+                             OnClick="() => showCommentDialog = false">
+                        <MIcon>mdi-close</MIcon>
+                    </MButton>
+                    <MToolbarTitle>评论</MToolbarTitle>
+                    <MSpacer></MSpacer>
+                </MToolbar>
+                <MList Dense
+                       Class="overflow-auto"
+                       Style="margin: 0 auto;height:calc(100vh - 64px)">
+                    @if (showCommentDialog == true)
+                    {
+                        @foreach (var item in ReplyList)
+                        {
+                            <MLazy Options="new IntersectionObserverInit(0.5)">
+                                <MListItem>
+                                    <div class="topic-userinfo">
+                                        <div class="comment-userinfo">
+                                            <MAvatar size="32" Class="mr-2">
+                                                <MImage Src="@item.UserAvatar"></MImage>
+                                            </MAvatar>
+                                            <div>
+                                                <span class="font-weight-medium deep-orange--text">
+                                                    @item.UserNickName
+                                                </span>
+                                                @if (!string.IsNullOrEmpty(item.ReplyTo))
+                                                {
+                                                    <span class="ml-1">回复</span>
+                                                    <span class="ml-1 deep-orange--text">
+                                                        @item.ReplyTo
+                                                    </span>
+                                                }
+                                                <span>
+                                                    :
+                                                </span>
+                                                @if (item.IsAuthor)
+                                                {
+                                                    <MChip Small
+                                                           Class="ml-2"
+                                                           Color="primary">
+                                                        楼主
+                                                    </MChip>
+                                                }
+
+                                                @if (item.IsAdmin)
+                                                {
+                                                    <MChip Small
+                                                           Class="ml-2"
+                                                           Color="primary">
+                                                        官方
+                                                    </MChip>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2 ml-10 post-content">
+                                            @((MarkupString)item.Content)
+                                        </div>
+
+                                        <div class="mt-2 ml-10 reply-toolbar grey--text text--lighten-1">
+                                            @item.CreateTime
                                         </div>
                                     </div>
-
-                                    <div class="mt-2 ml-10 post-content">
-                                        @((MarkupString)item.Content)
-                                    </div>
-
-                                    <div class="mt-2 ml-10 reply-toolbar grey--text text--lighten-1">
-                                        @item.CreateTime
-                                    </div>
-                                </div>
-                            </MListItem>
-                            <MDivider></MDivider>
-                        </MLazy>
+                                </MListItem>
+                                <MDivider></MDivider>
+                            </MLazy>
+                        }
                     }
-                }
-            </MList>
-        </MCard>
-    </ChildContent>
-</MDialog>
+                </MList>
+            </MCard>
+        </ChildContent>
+    </MDialog>
+}
 
 
 <style>
