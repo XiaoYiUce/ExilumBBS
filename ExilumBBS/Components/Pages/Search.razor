@@ -9,6 +9,10 @@
 @inject HttpTools httpTools
 @inject AppState appState
 
+@inject NavigationManager navigation
+
+@inject INavigationService navigationService
+
 @layout WithBackLayout
 
 <div class="searchbody" id="searchResultList">
@@ -46,7 +50,7 @@
             <MList ThreeLine>
                 @foreach (var item in SearchResults)
                 {
-                    <MListItem>
+                    <MListItem Link>
                         <div class="search-list">
                             <div class="search-list-user">
                                 <MListItemAvatar>
@@ -70,7 +74,7 @@
                                     <MListItemSubtitle>@item.CreateTime</MListItemSubtitle>
                                 </MListItemContent>
                             </div>
-                            <div class="search-list-content text-truncate ml-2">
+                            <div class="search-list-content text-truncate ml-2" @onclick="() => ToTopic(item.TopicId)">
                                 <div class="search-list-content-title text-truncate ">
                                     @item.Title
                                 </div>
@@ -174,7 +178,17 @@
     {
         appState.WithbackLayoutState.AppBarTitle = "搜索";
         await GetHotWord();
+        navigationService.Initialize(navigation);
         await base.OnInitializedAsync();
+    }
+
+    /// <summary>
+    /// 跳转至帖子
+    /// </summary>
+    /// <param name="topicId"></param>
+    private void ToTopic(long topicId)
+    {
+        navigationService.NavigateTo($"/post/{topicId}");
     }
 
     /// <summary>
@@ -197,6 +211,11 @@
         }
     }
 
+    /// <summary>
+    /// 触底加载
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
     private async Task InfiftyLoad(InfiniteScrollLoadEventArgs args)
     {
         await PostSearch(SearchType);

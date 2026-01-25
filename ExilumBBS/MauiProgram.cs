@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
 using CommunityToolkit.Maui;
+using ExilumBBS.Services.StateService;
 
 namespace ExilumBBS
 {
@@ -34,6 +35,8 @@ namespace ExilumBBS
             builder.Services.AddSingleton<PostListState>();
             builder.Services.AddSingleton<IThemeService, ThemeService>();
             builder.Services.AddSingleton<ISettingService, SettingService>();
+            builder.Services.AddSingleton<IStateService, StateService>();
+
             //注入Services
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IUserService, UserService>();

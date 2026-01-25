@@ -5,6 +5,7 @@
 @using ExilumBBS.Models.DTO
 @using ExilumBBS.Models.NoDbEntity
 @using ExilumBBS.Models.Response
+@using ExilumBBS.Services.StateService
 @using ExilumBBS.State
 @using System.ComponentModel
 @using System.Threading.Tasks
@@ -13,6 +14,8 @@
 @inject IJSRuntime JS
 @inject IPopupService popupService
 @inject INavigationService navigationService
+@inject IStateService stateService
+
 @inject NavigationManager Navigation
 @inject PostListState postListState
 @inject UserState userState
@@ -110,6 +113,8 @@
 
 
 @code {
+    private IJSObjectReference? jsModule;
+
     /// <summary>
     /// 置顶帖子
     /// </summary>
@@ -134,8 +139,38 @@
     private long ReplyTime = 0;
     private long HotValue = 0;
 
-    private void ToTopic(long topicId)
+    /// <summary>
+    /// 用于下次恢复滚动位置
+    /// </summary>
+    private long ScrollY = 0;
+
+    /// <summary>
+    /// 前往帖子详情页
+    /// </summary>
+    /// <param name="topicId"></param>
+    private async void ToTopic(long topicId)
     {
+        var scrollTop = 0;
+        if (jsModule != null)
+        {
+            scrollTop = await jsModule.InvokeAsync<int>("getScrollPosition", "infinite-scroll-usage");
+        }
+
+        Debug.WriteLine($"scrollTop:{scrollTop}");
+        var stat = new HomeHistoryStatus()
+        {
+            HotValue = this.HotValue,
+            ReplyTime = this.ReplyTime,
+            PubTime = this.PubTime,
+            LastTid = this.LastTid,
+            NextPage = this.NextPage,
+            ShowPage = this.showPage,
+            PostList = this.PostList,
+            ScrollY = scrollTop,
+            TopPostPreviews = this.TopPostPreviews
+        };
+        stateService.SetHomeHistoryStatus(stat);
+
         navigationService.NavigateTo($"/post/{topicId}");
     }
 
@@ -291,6 +326,22 @@
     protected override async Task OnInitializedAsync()
     {
         navigationService.Initialize(Navigation);
+        var stat = stateService.GetHomeHistoryStatus();
+        if (stat != null)
+        {
+            // 恢复之前的浏览状态
+            this.HotValue = stat.HotValue;
+            this.ReplyTime = stat.ReplyTime;
+            this.PubTime = stat.PubTime;
+            this.LastTid = stat.LastTid;
+            this.NextPage = stat.NextPage;
+            this.showPage = stat.ShowPage;
+            this.PostList = stat.PostList;
+            this.TopPostPreviews = stat.TopPostPreviews;
+            this.ScrollY = stat.ScrollY;
+            stateService.ClearHomeHistoryStatus();
+        }
+
         appState.MainLayoutState.FilterVisable = true;
         var bartitle = CategoryInfo
                        .categoryList
@@ -312,17 +363,30 @@
     /// <returns></returns>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/jstools.js");
+        }
+
+        if (jsModule != null && ScrollY != 0)
+        {
+            await jsModule.InvokeVoidAsync("setScrollPosition", "infinite-scroll-usage", ScrollY);
+        }
         await base.OnAfterRenderAsync(firstRender);
+
 
         // 位于首页时，本质上切换分类选项卡都是在同一页面进行，并且此时CategoryId=MenuId
         appState.CurrentMenu = postListState.CategoryId;
     }
 
-    public void Dispose()
+    public async void Dispose()
     {
         // 释放状态机监听
         postListState.PropertyChanged -= OnStateChanged;
 
-        // 预留:在退出首页前对当前页面状态进行缓存，方便回到当前页之后恢复之前的浏览状态
+        if (jsModule != null)
+        {
+            await jsModule.DisposeAsync();
+        }
     }
 }
