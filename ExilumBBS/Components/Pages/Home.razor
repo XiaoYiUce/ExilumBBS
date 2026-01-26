@@ -378,6 +378,7 @@
         if (jsModule != null && ScrollY != 0)
         {
             await jsModule.InvokeVoidAsync("setScrollPosition", "infinite-scroll-usage", ScrollY);
+            ScrollY = 0;
         }
         await base.OnAfterRenderAsync(firstRender);
 

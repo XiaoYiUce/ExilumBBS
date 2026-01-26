@@ -192,6 +192,7 @@
         if (jsModule != null && ScrollY != 0)
         {
             await jsModule.InvokeVoidAsync("setScrollPosition", "searchResultList", ScrollY);
+            ScrollY = 0;
         }
 
         await base.OnAfterRenderAsync(firstRender);
