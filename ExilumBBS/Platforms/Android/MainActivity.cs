@@ -12,6 +12,9 @@ namespace ExilumBBS
     [Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
     public class MainActivity : MauiAppCompatActivity
     {
+        private readonly Lazy<INavigationService> _navigationService = new(() => IPlatformApplication.Current!.Services.GetRequiredService<INavigationService>());
+        private INavigationService NavigationService => _navigationService.Value;
+
         protected override void OnCreate(Bundle? savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -21,13 +24,25 @@ namespace ExilumBBS
 
         class OnBackPressedCallback(bool enabled) : AndroidX.Activity.OnBackPressedCallback(enabled)
         {
-            private readonly Lazy<INavigationService> _navigationService = new(() => IPlatformApplication.Current!.Services.GetRequiredService<INavigationService>());
-            private INavigationService NavigationService => _navigationService.Value;
 
             public override void HandleOnBackPressed()
             {
-                NavigationService.NavigateBack();
+                //NavigationService.NavigateBack();
             }
+        }
+
+        public override bool DispatchKeyEvent(KeyEvent? e)
+        {
+            if (e!.KeyCode == Keycode.Back)
+            {
+                if (e.Action == KeyEventActions.Down)
+                {
+                    NavigationService.NavigateBack();
+                }
+                return true;
+            }
+
+            return base.DispatchKeyEvent(e);
         }
 
     }

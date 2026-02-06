@@ -6,9 +6,16 @@
 @using System.Diagnostics
 
 @inject AppState appState
+@inject PostCommentState postCommentState
 @inject HttpTools httpTools
+@inject NavigationManager navigationManager
 
 @inject IPopupService popupService
+@inject INavigationService navigationService
+
+@inject IJSRuntime JS
+
+@implements IDisposable
 
 @layout WithBackLayout
 
@@ -44,7 +51,7 @@
         <MList TwoLine>
             @foreach (var item in commentMessageItems)
             {
-                <MListItem>
+                <MListItem OnClick="() => OpenCommentDialog(item.CommentId, item.TopicId)">
                     <MListItemAvatar>
                         <MImage Src="@item.AvatarUrl"></MImage>
                     </MListItemAvatar>
@@ -62,6 +69,126 @@
                          Parent="#infinite-scroll-usage">
         </MInfiniteScroll>
     </div>
+
+
+    <MDialog @bind-Value="showCommentDialog"
+             Fullscreen
+             Transition="dialog-bottom-transition">
+        <ChildContent>
+            <MCard>
+                <MToolbar>
+                    <MButton Icon
+                             OnClick="() => showCommentDialog = false">
+                        <MIcon>mdi-close</MIcon>
+                    </MButton>
+                    <MToolbarTitle>全部回复</MToolbarTitle>
+                    <MSpacer></MSpacer>
+                </MToolbar>
+                <MList Dense
+                       Class="overflow-auto"
+                       Style="margin: 0 auto;height:calc(100vh - 64px)">
+                    @if (showCommentDialog == true)
+                    {
+                        @if (floorInfo != null)
+                        {
+                            <MListItem>
+                                <div class="topic-userinfo">
+                                    <div class="comment-userinfo">
+                                        <MAvatar size="32" Class="mr-2">
+                                            <MImage Src="@floorInfo.UserAvatar"></MImage>
+                                        </MAvatar>
+                                        <div>
+                                            <span class="font-weight-medium deep-orange--text">
+                                                @floorInfo.UserNickName
+                                            </span>
+                                            <span>
+                                                :
+                                            </span>
+                                            @if (floorInfo.IsAuthor)
+                                            {
+                                                <MChip Small
+                                                       Class="ml-2"
+                                                       Color="primary">
+                                                    楼主
+                                                </MChip>
+                                            }
+
+                                            @if (floorInfo.IsAdmin)
+                                            {
+                                                <MChip Small
+                                                       Class="ml-2"
+                                                       Color="primary">
+                                                    官方
+                                                </MChip>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-2 ml-10 post-content">
+                                        @((MarkupString)floorInfo.Content)
+                                    </div>
+
+                                    <div class="mt-2 ml-10 reply-toolbar grey--text text--lighten-1">
+                                        @floorInfo.CreateTime
+                                    </div>
+                                </div>
+                            </MListItem>
+                            <MDivider></MDivider>
+                            @if (floorInfo.CommentReply != null)
+                            {
+                                @foreach (var item in floorInfo.CommentReply)
+                                {
+                                    <MListItem>
+                                        <div class="topic-userinfo">
+                                            <div class="comment-userinfo">
+                                                <MAvatar size="32" Class="mr-2">
+                                                    <MImage Src="@item.UserAvatar"></MImage>
+                                                </MAvatar>
+                                                <div>
+                                                    <span class="font-weight-medium deep-orange--text">
+                                                        @item.UserNickName
+                                                    </span>
+                                                    <span>
+                                                        :
+                                                    </span>
+                                                    @if (item.IsAuthor)
+                                                    {
+                                                        <MChip Small
+                                                               Class="ml-2"
+                                                               Color="primary">
+                                                            楼主
+                                                        </MChip>
+                                                    }
+
+                                                    @if (item.IsAdmin)
+                                                    {
+                                                        <MChip Small
+                                                               Class="ml-2"
+                                                               Color="primary">
+                                                            官方
+                                                        </MChip>
+                                                    }
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-2 ml-10 post-content">
+                                                @((MarkupString)item.Content)
+                                            </div>
+
+                                            <div class="mt-2 ml-10 reply-toolbar grey--text text--lighten-1">
+                                                @item.CreateTime
+                                            </div>
+                                        </div>
+                                    </MListItem>
+                                    <MDivider></MDivider>
+                                }
+                            }
+                        }
+                    }
+                </MList>
+            </MCard>
+        </ChildContent>
+    </MDialog>
 }
 
 @if (ListType == 2)
@@ -70,7 +197,7 @@
         <MList TwoLine>
             @foreach (var item in likeMessageItems)
             {
-                <MListItem>
+                <MListItem OnClick="() => ToTopic(item.TopicId)">
                     <MListItemAvatar>
                         <MImage Src="@item.AvatarUrl"></MImage>
                     </MListItemAvatar>
@@ -126,11 +253,27 @@
         display: flex;
         justify-content: flex-end;
     }
+
+    .comment-userinfo {
+        display: flex;
+        width: 100%;
+    }
+
+    .emoji {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    img {
+        max-width: 100%;
+    }
 </style>
 
 
 @code {
     private UnreadnumResponse unreadnumResponse = new UnreadnumResponse();
+    private IJSObjectReference? jsModule;
+    private bool showCommentDialog { get; set; } = false;
 
     /// <summary>
     /// 要查看的消息类型
@@ -160,13 +303,26 @@
     private List<CommentMessageItem> commentMessageItems = [];
     private List<FollowMessageItem> followMessageItems = [];
     private List<LikeMessageItem> likeMessageItems = [];
+    private FloorInfoResponse? floorInfo;
 
     protected override async Task OnInitializedAsync()
     {
         appState.WithbackLayoutState.AppBarTitle = "消息";
+        navigationService.Initialize(navigationManager);
+        postCommentState.CommentStateChange += CommentDialogStateChange;
         await GetUnreadNum();
         await GetMessageListAsync();
         await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/jstools.js");
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     private async Task SwitchType(int type)
@@ -267,5 +423,85 @@
             }
 
         }
+    }
+
+    /// <summary>
+    /// 前往帖子详情页
+    /// </summary>
+    /// <param name="topicId"></param>
+    private async void ToTopic(long topicId)
+    {
+        double scrollTop = 0;
+        if (jsModule != null)
+        {
+            scrollTop = await jsModule.InvokeAsync<double>("getScrollPosition", "infinite-scroll-usage");
+        }
+
+        Debug.WriteLine($"scrollTop:{scrollTop}");
+        // var stat = new HomeHistoryStatus()
+        // {
+        //     HotValue = this.HotValue,
+        //     ReplyTime = this.ReplyTime,
+        //     PubTime = this.PubTime,
+        //     LastTid = this.LastTid,
+        //     NextPage = this.NextPage,
+        //     ShowPage = this.showPage,
+        //     PostList = this.PostList,
+        //     ScrollY = scrollTop,
+        //     TopPostPreviews = this.TopPostPreviews
+        // };
+        // stateService.SetHomeHistoryStatus(stat);
+
+        navigationService.NavigateTo($"/post/{topicId}");
+    }
+
+    /// <summary>
+    /// 打开评论弹窗
+    /// </summary>
+    /// <param name="commentId">评论编号</param>
+    /// <param name="topicId">帖子编号</param>
+    /// <returns></returns>
+    private async Task OpenCommentDialog(long commentId, long topicId)
+    {
+        var response = await httpTools.PostAsync("/community/comment/floor_info", new { comment_id = commentId, topic_id = topicId });
+        if (response != null && response.Code == 0)
+        {
+            if (response.Data.HasValue)
+            {
+                var floorInfo = response.Data.Value.Deserialize<FloorInfoResponse>();
+                this.floorInfo = floorInfo;
+                showCommentDialog = true;
+                postCommentState.IsOpenComment = true;
+            }
+
+        }
+    }
+
+    /// <summary>
+    /// 关闭全部评论弹窗
+    /// </summary>
+    private void DisableCommentDialog()
+    {
+        floorInfo = null;
+        showCommentDialog = false;
+        postCommentState.IsOpenComment = false;
+    }
+
+    /// <summary>
+    /// 评论弹窗状态变化
+    /// </summary>
+    /// <param name="state">新状态</param>
+    private void CommentDialogStateChange(bool state)
+    {
+        if (state == false)
+        {
+            DisableCommentDialog();
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        postCommentState.CommentStateChange -= CommentDialogStateChange;
     }
 }
