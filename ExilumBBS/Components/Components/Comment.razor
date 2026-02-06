@@ -54,7 +54,7 @@
 
                     </MListItemTitle>
 
-                    <div class="mt-2 pl-12" style="overflow-x:auto;">
+                    <div class="mt-2 pl-12 post-content" style="overflow-x:auto;width:95%">
                         @((MarkupString)comment.Content)
                     </div>
 
@@ -104,14 +104,21 @@
                                                         </MChip>
                                                     }
                                                 </div>
-
-                                                <span class="text-caption text--secondary mt-2">
-                                                    @item.CreateTime @item.IpLocation
-                                                </span>
                                             </div>
 
                                             <div class="reply-content mt-2" style="overflow-x:auto;">
                                                 @((MarkupString)item.Content)
+                                            </div>
+
+                                            <div class="mt-2 reply-toolbar" style="width:80%;">
+                                                <p class="grey--text text--lighten-1">
+                                                    @item.CreateTime
+                                                </p>
+
+                                                <MButton Icon
+                                                         Size="small">
+                                                    <MIcon>mdi-comment-processing-outline</MIcon>
+                                                </MButton>
                                             </div>
                                         </div>
                                     </MListItem>
@@ -173,7 +180,7 @@
             <MCard>
                 <MToolbar>
                     <MButton Icon
-                             OnClick="() => showCommentDialog = false">
+                             OnClick="() => DisableCommentDialog()">
                         <MIcon>mdi-close</MIcon>
                     </MButton>
                     <MToolbarTitle>评论</MToolbarTitle>
@@ -231,8 +238,15 @@
                                             @((MarkupString)item.Content)
                                         </div>
 
-                                        <div class="mt-2 ml-10 reply-toolbar grey--text text--lighten-1">
-                                            @item.CreateTime
+                                        <div class="mt-2 ml-10 reply-toolbar">
+                                            <p class="grey--text text--lighten-1">
+                                                @item.CreateTime
+                                            </p>
+
+                                            <MButton Icon
+                                                     Size="small">
+                                                <MIcon>mdi-comment-processing-outline</MIcon>
+                                            </MButton>
                                         </div>
                                     </div>
                                 </MListItem>
@@ -268,6 +282,9 @@
     }
 
     .reply-toolbar {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
     }
 
     .reply-content {
@@ -275,6 +292,16 @@
         overflow-x: auto;
         word-break: break-all;
         width: 80%;
+    }
+
+    .comment-toolbar {
+        display: flex;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .post-content p {
+        width: 95%;
     }
 </style>
 
@@ -292,7 +319,7 @@
     private async Task DisableCommentDialog()
     {
         showCommentDialog = false;
-        ReplyList.Clear();
+        postCommentState.IsOpenComment = false;
     }
 
     private async Task ToggleLike(CommentResponse comment)
@@ -301,6 +328,7 @@
         {
             Debug.WriteLine("请先登录!");
             await popupService.EnqueueSnackbarAsync("请先登录", AlertTypes.Warning);
+            return;
         }
 
         var response = await httpTools.PostAsync("/community/comment/like", new { comment_id = comment.CommentId, topic_id = TopicId });
@@ -333,6 +361,7 @@
         if (!userState.IsLogin)
         {
             await popupService.EnqueueSnackbarAsync("请先登录", AlertTypes.Warning);
+            return;
         }
 
         var response = await httpTools.PostAsync("/community/comment/bad", new { comment_id = comment.CommentId, topic_id = TopicId });

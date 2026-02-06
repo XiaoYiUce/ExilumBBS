@@ -87,13 +87,13 @@
                             <MIcon>@(postInfo.IsBad ? "mdi-thumb-down" : "mdi-thumb-down-outline")</MIcon>
                         </MButton>
 
-                        <MButton Text
+                        <MButton Icon
                                  Size="small"
                                  Class="ml-3"
                                  OnClick="() => {}">
-                            <MIcon left>mdi-reply</MIcon>
-                            回复
+                            <MIcon left>mdi-comment-processing-outline</MIcon>
                         </MButton>
+                        <span class="text-caption text--secondary ml-1">@postInfo.CommentNum</span>
                     </div>
                 </MListItemContent>
             </MListItem>
