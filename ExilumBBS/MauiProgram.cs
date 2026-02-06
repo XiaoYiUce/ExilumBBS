@@ -7,7 +7,6 @@ using Masa.Blazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using SqlSugar;
-using CommunityToolkit.Maui;
 using ExilumBBS.Services.StateService;
 
 namespace ExilumBBS
@@ -19,7 +18,6 @@ namespace ExilumBBS
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
-                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -33,6 +31,7 @@ namespace ExilumBBS
             //状态机注入
             builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<PostListState>();
+            builder.Services.AddSingleton<PostCommentState>();
             builder.Services.AddSingleton<IThemeService, ThemeService>();
             builder.Services.AddSingleton<ISettingService, SettingService>();
             builder.Services.AddSingleton<IStateService, StateService>();

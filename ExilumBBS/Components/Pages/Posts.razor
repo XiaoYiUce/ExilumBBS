@@ -1,6 +1,6 @@
 ﻿@page "/post/{Id:long}"
 
-@layout PostLayout
+@layout WithBackLayout
 
 @using System.Diagnostics
 @using System.Text.Json
@@ -8,12 +8,15 @@
 @using ExilumBBS.Models.DTO.Post
 @using ExilumBBS.Models.Response
 @using ExilumBBS.Models.Response.Post
+@using ExilumBBS.State
 
 @inject HttpTools httpTools
 @inject NavigationManager navigationManager
 @inject ITokenService tokenService
 @inject IPopupService popupService
 @inject INavigationService navigationService
+
+@inject AppState appState
 
 @if (postInfo != null && !string.IsNullOrEmpty(postInfo.Content))
 {
@@ -60,6 +63,9 @@
 
                     </MListItemTitle>
 
+                    <div class="mt-2 post-title">
+                        @(postInfo.Title)
+                    </div>
                     <div class="mt-2 post-content">
                         @((MarkupString)postInfo.Content)
                     </div>
@@ -117,6 +123,12 @@
 
     img {
         max-width: 100%;
+    }
+
+    .post-title {
+        font-size: 1.5rem;
+        font-weight: 200;
+        padding-bottom: 1rem;
     }
 </style>
 
@@ -299,7 +311,7 @@
     protected override Task OnInitializedAsync()
     {
         navigationService.Initialize(navigationManager);
+        appState.WithbackLayoutState.AppBarTitle = "帖子";
         return base.OnInitializedAsync();
     }
-
 }

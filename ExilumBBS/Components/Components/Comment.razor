@@ -5,6 +5,7 @@
 
 @inject HttpTools httpTools
 @inject UserState userState
+@inject PostCommentState postCommentState
 @inject IPopupService popupService
 
 <MList dense>
@@ -360,6 +361,19 @@
     public async Task ShowCommentDialog(List<CommentWithReplyToResponse> commentList)
     {
         ReplyList = commentList;
+        postCommentState.IsOpenComment = true;
         showCommentDialog = true;
+    }
+
+    private void CommentStateChange(bool state)
+    {
+        showCommentDialog = state;
+        InvokeAsync(StateHasChanged);
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        postCommentState.CommentStateChange += CommentStateChange;
+        return base.OnInitializedAsync();
     }
 }

@@ -9,7 +9,7 @@
 <MApp>
     <MMain>
         <MAppBar>
-            <MButton Icon OnClick='() => JS.InvokeVoidAsync("history.back")'>
+            <MButton Icon OnClick='()=>navigationService.NavigateBack()'>
                 <MIcon>mdi-arrow-left</MIcon>
             </MButton>
             <MToolbarTitle>@appState.WithbackLayoutState.AppBarTitle</MToolbarTitle>

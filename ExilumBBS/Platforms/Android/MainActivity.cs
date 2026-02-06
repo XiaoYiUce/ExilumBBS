@@ -16,24 +16,17 @@ namespace ExilumBBS
         {
             base.OnCreate(savedInstanceState);
 
-            OnBackPressedDispatcher.AddCallback(new OnBackPressedCallback(this, true));
+            OnBackPressedDispatcher.AddCallback(new OnBackPressedCallback(true));
         }
 
-        internal class OnBackPressedCallback : AndroidX.Activity.OnBackPressedCallback
+        class OnBackPressedCallback(bool enabled) : AndroidX.Activity.OnBackPressedCallback(enabled)
         {
             private readonly Lazy<INavigationService> _navigationService = new(() => IPlatformApplication.Current!.Services.GetRequiredService<INavigationService>());
-            private readonly MainActivity _activity;
-
-            public OnBackPressedCallback(MainActivity activity, bool enabled) : base(enabled)
-            {
-
-                _activity = activity;
-            }
+            private INavigationService NavigationService => _navigationService.Value;
 
             public override void HandleOnBackPressed()
             {
-                //System.Diagnostics.Debug.WriteLine(_navigationService.Value.Uri);
-                _navigationService.Value.NavigateBack();
+                NavigationService.NavigateBack();
             }
         }
 

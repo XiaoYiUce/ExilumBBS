@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ExilumBBS.State
 {
-    internal class AppState
+    public class AppState
     {
         /// <summary>
         /// 当前选中菜单项

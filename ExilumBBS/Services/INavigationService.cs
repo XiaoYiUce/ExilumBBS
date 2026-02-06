@@ -21,7 +21,6 @@ namespace ExilumBBS.Services
         /// </summary>
         public void NavigateBack();
 
-        //public void Initialize(IJSRuntime jSRuntime);
         public void Initialize(NavigationManager navigationManager);
     }
 }

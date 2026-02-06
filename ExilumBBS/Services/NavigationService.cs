@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using ExilumBBS.State;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,11 @@ namespace ExilumBBS.Services
     public class NavigationService : INavigationService
     {
         private NavigationManager _navigation = default!;
+        private PostCommentState _postCommentState = default!;
+        public NavigationService(PostCommentState postCommentState)
+        {
+            _postCommentState = postCommentState;
+        }
 
         /// <summary>
         /// 历史URL列表
@@ -61,8 +67,16 @@ namespace ExilumBBS.Services
         {
             if (HistoryUrlList.Count > 0)
             {
-                HistoryUrlList.RemoveAt(HistoryUrlList.Count - 1);
-                _navigation.NavigateTo("javascript:history.back()");
+                if (_postCommentState.IsOpenComment)
+                {
+                    _postCommentState.SetCommentStat(false);
+                }
+                else
+                {
+                    HistoryUrlList.RemoveAt(HistoryUrlList.Count - 1);
+                    _navigation.NavigateTo("javascript:history.back()");
+                }
+
             }
             else
             {
@@ -74,6 +88,17 @@ namespace ExilumBBS.Services
         public void Initialize(NavigationManager navigation)
         {
             _navigation = navigation;
+            _navigation.LocationChanged += (sender, e) =>
+            {
+            };
+
+            _navigation.RegisterLocationChangingHandler(async x =>
+            {
+                if (_postCommentState.IsOpenComment)
+                {
+                    x.PreventNavigation();
+                }
+            });
         }
     }
 }
