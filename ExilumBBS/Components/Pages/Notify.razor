@@ -124,12 +124,39 @@
                                         </div>
                                     </div>
 
+                                    <div class="ml-10 mt-2">
+                                        <p class="grey--text text--lighten-1">
+                                            @floorInfo.CreateTime
+                                        </p>
+                                    </div>
+
                                     <div class="mt-2 ml-10 post-content">
                                         @((MarkupString)floorInfo.Content)
                                     </div>
 
-                                    <div class="mt-2 ml-10 reply-toolbar grey--text text--lighten-1">
-                                        @floorInfo.CreateTime
+                                    <div class="d-flex align-center mt-2 ml-10" style="justify-content:flex-end">
+                                        @* <MButton Icon
+                                                 Size="small"
+                                                 Color="@(postInfo.IsLike ? "primary" : "default")"
+                                                 OnClick="() => ToggleTopicLike(postInfo)">
+                                            <MIcon>@(postInfo.IsLike ? "mdi-thumb-up" : "mdi-thumb-up-outline")</MIcon>
+                                        </MButton>
+                                        <span class="text-caption text--secondary ml-1">@postInfo.LikeNum</span>
+
+                                        <MButton Icon
+                                                 Size="small"
+                                                 Color="@(postInfo.IsBad ? "primary" : "default")"
+                                                 OnClick="() => ToggleTopicBad(postInfo)">
+                                            <MIcon>@(postInfo.IsBad ? "mdi-thumb-down" : "mdi-thumb-down-outline")</MIcon>
+                                        </MButton> *@
+
+                                        <MButton Icon
+                                                 Size="small"
+                                                 Class="ml-3"
+                                                 OnClick="() => {}">
+                                            <MIcon left>mdi-comment-processing-outline</MIcon>
+                                        </MButton>
+                                        <span class="text-caption text--secondary ml-1">@floorInfo.ReplyNum</span>
                                     </div>
                                 </div>
                             </MListItem>
@@ -175,8 +202,15 @@
                                                 @((MarkupString)item.Content)
                                             </div>
 
-                                            <div class="mt-2 ml-10 reply-toolbar grey--text text--lighten-1">
-                                                @item.CreateTime
+                                            <div class="mt-2 ml-10 reply-toolbar">
+                                                <p class="grey--text text--lighten-1">
+                                                    @floorInfo.CreateTime
+                                                </p>
+
+                                                <MButton Icon
+                                                         Size="small">
+                                                    <MIcon>mdi-comment-processing-outline</MIcon>
+                                                </MButton>
                                             </div>
                                         </div>
                                     </MListItem>
@@ -249,6 +283,12 @@
 }
 
 <style>
+    .reply-toolbar {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
     .logtime {
         display: flex;
         justify-content: flex-end;
