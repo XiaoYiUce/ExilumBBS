@@ -12,7 +12,7 @@
     </div>
 
     <div class="comment-popup-submit">
-        <MButton>发送</MButton>
+        <MButton OnClick="SendComment">发送</MButton>
     </div>
     <div class="comment-popup-toolbar">
         <MIcon OnClick="() => OpenEmojiList()">mdi-emoticon-happy-outline</MIcon>
@@ -57,6 +57,9 @@
 
     [Parameter]
     public EventCallback<bool> VisibleChanged { get; set; }
+
+    [Parameter]
+    public EventCallback SendComment { get; set; }
 
     private ElementReference QuillElement;
 
@@ -164,5 +167,14 @@
     {
         await QuillInterop.InsertQuillEmoji(JS, QuillElement, emojiUrl);
         await QuillInterop.FocusToEnd(JS, QuillElement);
+    }
+
+    /// <summary>
+    /// 获取HTML内容
+    /// </summary>
+    /// <returns></returns>
+    public async Task<string> GetHTMLContent()
+    {
+        return await QuillInterop.GetHTML(JS, QuillElement);
     }
 }

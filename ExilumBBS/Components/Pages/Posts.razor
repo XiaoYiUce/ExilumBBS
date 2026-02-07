@@ -123,7 +123,7 @@
                 LikeNum="postInfo.LikeNum"
                 CommentNum="postInfo.CommentNum" />
 
-    <CommentPopup @bind-Visible="NewCommentIsVisable">
+    <CommentPopup @bind-Visible="NewCommentIsVisable" @ref="commentPopup" SendComment="() => SendComment()">
         <EditorContent>
 
         </EditorContent>
@@ -156,6 +156,8 @@
     private PostInfoResponse? postInfo;
     private List<CommentResponse> commentList = [];
     private PostCommentFilterDTO? filterDTO;
+
+    private CommentPopup? commentPopup;
 
     /// <summary>
     /// 发布新评论面板是否可见
@@ -320,6 +322,36 @@
             Debug.WriteLine("点踩成功");
             await GetTopicInfo();
         }
+    }
+
+    /// <summary>
+    /// 发送评论
+    /// </summary>
+    /// <returns></returns>
+    private async Task SendComment()
+    {
+        if (commentPopup != null && postInfo != null)
+        {
+            var htmlContent = await commentPopup.GetHTMLContent();
+
+            Debug.WriteLine(htmlContent);
+            var response = await httpTools.PostAsync("/community/comment/reply", new
+            {
+                code = "",
+                comment_id = 0,
+                comment_sub_id = 0,
+                content = htmlContent,
+                topic_id = postInfo.TopicId
+            });
+
+            if (response != null && response.Code == 0 && response.Data.HasValue)
+            {
+                NewCommentIsVisable = false;
+                popupService.ShowSuccessToast("发送成功");
+                await PostTopicCommentList();
+            }
+        }
+
     }
 
     protected override async Task OnParametersSetAsync()
