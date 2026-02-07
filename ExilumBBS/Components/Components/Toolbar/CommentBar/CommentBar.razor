@@ -1,7 +1,7 @@
 ﻿@using ExilumBBS.Models.Response.Post
 
 <div class="comment-toolbar">
-    <div class="comment-input-placeholder">
+    <div class="comment-input-placeholder" @onclick="NewComment">
         <span>说点什么!</span>
     </div>
     <div class="comment-toolbar-action">
@@ -26,8 +26,7 @@
 
         <div class="comment-toolbar-action-item">
             <MButton Text
-                     Size="small"
-                     OnClick="NewComment">
+                     Size="small">
                 <MIcon>mdi-comment-processing-outline</MIcon>
                 <span class="text-caption text--secondary ml-1">@CommentNum</span>
             </MButton>
