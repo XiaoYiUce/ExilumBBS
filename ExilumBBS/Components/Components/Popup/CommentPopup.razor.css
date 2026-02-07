@@ -11,3 +11,51 @@
     width: 100%;
     gap: 1rem;
 }
+
+.comment-popup-emoji {
+    margin-top: 1rem;
+}
+
+.comment-popup-emoji-content {
+    height: 30vh;
+    overflow-y: scroll;
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+    flex-wrap: wrap
+}
+
+.comment-popup-emoji-content-item {
+    width: 80px;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.comment-popup-emoji-toolbar {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    height: 48px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 0.3rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.comment-popup-emoji-type-item {
+    height: 48px;
+    width: 48px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#quill-editor {
+    height: 150px;
+}

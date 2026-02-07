@@ -30,9 +30,6 @@
 
     private async Task Close()
     {
-        if (Visible)
-        {
-            await VisibleChanged.InvokeAsync(false);
-        }
+        await VisibleChanged.InvokeAsync(false);
     }
 }

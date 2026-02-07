@@ -92,7 +92,7 @@
                         <MButton Icon
                                  Size="small"
                                  Class="ml-3"
-                                 OnClick="() => NewCommentTabVisableChange()">
+                                 OnClick="() => NewCommentIsVisable=true">
                             <MIcon>mdi-comment-processing-outline</MIcon>
                         </MButton>
                         <span class="text-caption text--secondary ml-1">@postInfo.CommentNum</span>
@@ -122,10 +122,12 @@
                 IsDisLike="postInfo.IsBad"
                 LikeNum="postInfo.LikeNum"
                 CommentNum="postInfo.CommentNum" />
-                
-     <CommentPopup @bind-Visible="NewCommentIsVisable">
 
-     </CommentPopup>
+    <CommentPopup @bind-Visible="NewCommentIsVisable">
+        <EditorContent>
+
+        </EditorContent>
+    </CommentPopup>
 
 }
 
@@ -318,14 +320,6 @@
             Debug.WriteLine("点踩成功");
             await GetTopicInfo();
         }
-    }
-
-    /// <summary>
-    /// 发布帖子新评论面板可视状态切换
-    /// </summary>
-    private void NewCommentTabVisableChange()
-    {
-        NewCommentIsVisable = true;
     }
 
     protected override async Task OnParametersSetAsync()
