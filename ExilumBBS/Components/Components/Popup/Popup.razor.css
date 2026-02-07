@@ -1,0 +1,73 @@
+/* 底部弹出层 - 遮罩 */
+.bottom-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0); /* 半透明遮罩 */
+    display: flex;
+    justify-content: flex-end; /* 内容靠底部 */
+    align-items: flex-end;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* 底部弹出层 - 内容区 */
+.bottom-popup-content {
+    width: 100%;
+    max-height: 80vh;
+    background-color: rgba(var(--m-theme-surface-container));
+    color: rgba(var(--m-theme-on-surface));
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding: 16px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease-out;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 移动端优化 */
+@media (max-width: 600px) {
+    .bottom-popup-content {
+        padding: 16px;
+        max-height: 70vh;
+    }
+}
+
+/* 可选：添加一个关闭手柄（TDesign 风格） */
+.bottom-popup-content::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background-color: #ccc;
+    border-radius: 2px;
+}

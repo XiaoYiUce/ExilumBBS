@@ -1,0 +1,38 @@
+﻿@if (Visible)
+{
+    <div class="bottom-popup-overlay" @onclick="OnOverlayClick">
+        <div class="bottom-popup-content" @ref="popupRef" @onclick:stopPropagation>
+            @if (ChildContent != null)
+            {
+                @ChildContent
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool CloseOnOverlayClick { get; set; } = true;
+
+    private ElementReference popupRef;
+
+    private async Task OnOverlayClick()
+    {
+        if (CloseOnOverlayClick)
+        {
+            Visible = false;
+            await Close();
+        }
+    }
+
+    private async Task Close()
+    {
+        if (Visible)
+        {
+            await VisibleChanged.InvokeAsync(false);
+        }
+    }
+}

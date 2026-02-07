@@ -1,0 +1,44 @@
+﻿<Popup Visible="isVisible" VisibleChanged="OnVisibleChanged">
+    <MTextarea Solo 
+               NoResize
+               Rows="5">
+    </MTextarea>
+    <div class="comment-popup-submit">
+        <MButton>发送</MButton>
+    </div>
+    <div class="comment-popup-toolbar">
+        <MIcon>mdi-emoticon-happy-outline</MIcon>
+                <MIcon>mdi-image</MIcon>
+    </div>
+</Popup>
+
+@code {
+    [Parameter] 
+    public bool Visible { get; set; }
+
+    [Parameter] 
+    public EventCallback<bool> VisibleChanged { get; set; }
+
+    private bool isVisible;
+
+    protected override void OnParametersSet()
+    {
+        // 同步来自父组件的 Visible 值
+        isVisible = Visible;
+    }
+
+    private async Task OnVisibleChanged(bool value)
+    {
+        // 如果 Popup 内部改变了可见性（比如点击遮罩关闭）
+        // 我们需要通知父组件
+        if (VisibleChanged.HasDelegate)
+        {
+            await VisibleChanged.InvokeAsync(value);
+        }
+        else
+        {
+            // 如果父组件没有注册回调，至少更新本地状态（可选）
+            isVisible = value;
+        }
+    }
+}

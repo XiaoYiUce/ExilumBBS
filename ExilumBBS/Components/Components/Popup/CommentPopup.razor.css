@@ -1,0 +1,13 @@
+.comment-popup-submit {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.comment-popup-toolbar {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    gap: 1rem;
+}

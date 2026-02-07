@@ -27,7 +27,7 @@
         <div class="comment-toolbar-action-item">
             <MButton Text
                      Size="small"
-                     OnClick="() => {}">
+                     OnClick="NewComment">
                 <MIcon>mdi-comment-processing-outline</MIcon>
                 <span class="text-caption text--secondary ml-1">@CommentNum</span>
             </MButton>
@@ -76,6 +76,8 @@
     public EventCallback ToggleLike { get; set; }
     [Parameter]
     public EventCallback ToggleDisLike { get; set; }
+    [Parameter]
+    public EventCallback NewComment { get; set; }
     [Parameter]
     public bool IsLike { get; set; }
     [Parameter]

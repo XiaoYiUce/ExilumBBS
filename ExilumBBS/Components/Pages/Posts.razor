@@ -6,6 +6,7 @@
 @using System.Text.Json
 @using ExilumBBS.Components.Components
 @using ExilumBBS.Components.Components.Toolbar.CommentBar
+@using ExilumBBS.Components.Components.Popup
 @using ExilumBBS.Models.DTO.Post
 @using ExilumBBS.Models.Response
 @using ExilumBBS.Models.Response.Post
@@ -91,7 +92,7 @@
                         <MButton Icon
                                  Size="small"
                                  Class="ml-3"
-                                 OnClick="() => {}">
+                                 OnClick="() => NewCommentTabVisableChange()">
                             <MIcon>mdi-comment-processing-outline</MIcon>
                         </MButton>
                         <span class="text-caption text--secondary ml-1">@postInfo.CommentNum</span>
@@ -116,10 +117,16 @@
     </MCard>
     <CommentBar ToggleLike="() => ToggleTopicLike(postInfo)"
                 ToggleDisLike="() => ToggleTopicBad(postInfo)"
+                NewComment="() => NewCommentIsVisable=true"
                 IsLike="postInfo.IsLike"
                 IsDisLike="postInfo.IsBad"
                 LikeNum="postInfo.LikeNum"
                 CommentNum="postInfo.CommentNum" />
+                
+     <CommentPopup @bind-Visible="NewCommentIsVisable">
+
+     </CommentPopup>
+
 }
 
 <style>
@@ -147,6 +154,11 @@
     private PostInfoResponse? postInfo;
     private List<CommentResponse> commentList = [];
     private PostCommentFilterDTO? filterDTO;
+
+    /// <summary>
+    /// 发布新评论面板是否可见
+    /// </summary>
+    private bool NewCommentIsVisable { get; set; }
 
     /// <summary>
     /// 是否只看楼主
@@ -245,6 +257,11 @@
         }
     }
 
+    /// <summary>
+    /// 帖子点赞
+    /// </summary>
+    /// <param name="postInfoResponse"></param>
+    /// <returns></returns>
     private async Task ToggleTopicLike(PostInfoResponse postInfoResponse)
     {
         // 判断登录状态
@@ -301,6 +318,14 @@
             Debug.WriteLine("点踩成功");
             await GetTopicInfo();
         }
+    }
+
+    /// <summary>
+    /// 发布帖子新评论面板可视状态切换
+    /// </summary>
+    private void NewCommentTabVisableChange()
+    {
+        NewCommentIsVisable = true;
     }
 
     protected override async Task OnParametersSetAsync()

@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:ExilumBBS"
              xmlns:components="clr-namespace:ExilumBBS.Components"
              x:Class="ExilumBBS.MainPage"
-             SafeAreaEdges="Container">
+             SafeAreaEdges="All">
 
     <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>
