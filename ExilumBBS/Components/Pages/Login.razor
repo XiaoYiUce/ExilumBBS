@@ -240,7 +240,7 @@
                         await tokenService.SetTokenAsync(resData.Token);
                         await popupService.EnqueueSnackbarAsync("登录成功", AlertTypes.Success);
                         await Task.Delay(1000);
-                        navigationService.NavigateTo("/");
+                        navigationService.NavigateBack();
                     }
                 }
                 else if (response != null && response.Code == -1)
@@ -281,7 +281,7 @@
                         await tokenService.SetTokenAsync(resData.Token);
                         await popupService.EnqueueSnackbarAsync("登录成功", AlertTypes.Success);
                         await Task.Delay(1000);
-                        navigationService.NavigateTo("/");
+                        navigationService.NavigateBack();
                     }
                 }
 

@@ -1,0 +1,87 @@
+﻿@using ExilumBBS.Models.Response.Post
+
+<div class="comment-toolbar">
+    <div class="comment-input-placeholder">
+        <span>说点什么!</span>
+    </div>
+    <div class="comment-toolbar-action">
+        <div class="comment-toolbar-action-item">
+            <MButton Text
+                     Size="small"
+                     Color="@(IsLike ? "primary" : "default")"
+                     OnClick="ToggleLike">
+                <MIcon>@(IsLike ? "mdi-thumb-up" : "mdi-thumb-up-outline")</MIcon>
+                <span class="text-caption text--secondary ml-1">@LikeNum</span>
+            </MButton>
+        </div>
+
+        <div class="comment-toolbar-action-item">
+            <MButton Icon
+                     Size="small"
+                     Color="@(IsDisLike ? "primary" : "default")"
+                     OnClick="ToggleDisLike">
+                <MIcon>@(IsDisLike ? "mdi-thumb-down" : "mdi-thumb-down-outline")</MIcon>
+            </MButton>
+        </div>
+
+        <div class="comment-toolbar-action-item">
+            <MButton Text
+                     Size="small"
+                     OnClick="() => {}">
+                <MIcon>mdi-comment-processing-outline</MIcon>
+                <span class="text-caption text--secondary ml-1">@CommentNum</span>
+            </MButton>
+        </div>
+    </div>
+</div>
+
+<style>
+    .comment-toolbar {
+        display: flex;
+        flex-direction: row;
+        height: 48px;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 24px;
+    }
+
+    .comment-input-placeholder {
+        padding: 8px 12px;
+        border: 1px solid;
+        border-radius: 8px;
+        color: #9e9e9e;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        min-height: 32px;
+        margin-right: 12px;
+        width: 60%;
+    }
+
+    .comment-toolbar-action {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .comment-toolbar-action-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+</style>
+
+
+@code {
+    [Parameter]
+    public EventCallback ToggleLike { get; set; }
+    [Parameter]
+    public EventCallback ToggleDisLike { get; set; }
+    [Parameter]
+    public bool IsLike { get; set; }
+    [Parameter]
+    public bool IsDisLike { get; set; }
+    [Parameter]
+    public int LikeNum { get; set; }
+    [Parameter]
+    public object? CommentNum { get; set; }
+}

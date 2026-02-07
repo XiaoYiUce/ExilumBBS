@@ -5,6 +5,7 @@
 @using System.Diagnostics
 @using System.Text.Json
 @using ExilumBBS.Components.Components
+@using ExilumBBS.Components.Components.Toolbar.CommentBar
 @using ExilumBBS.Models.DTO.Post
 @using ExilumBBS.Models.Response
 @using ExilumBBS.Models.Response.Post
@@ -22,7 +23,7 @@
 {
 
     <MCard Class="overflow-auto"
-           Style="margin: 0 auto;height: calc(100vh - 64px);"
+           Style="margin: 0 auto;height: calc(100vh - 112px);"
            Id="infinite-scroll-usage">
         <MList dense>
             <MListItem>
@@ -91,7 +92,7 @@
                                  Size="small"
                                  Class="ml-3"
                                  OnClick="() => {}">
-                            <MIcon left>mdi-comment-processing-outline</MIcon>
+                            <MIcon>mdi-comment-processing-outline</MIcon>
                         </MButton>
                         <span class="text-caption text--secondary ml-1">@postInfo.CommentNum</span>
                     </div>
@@ -113,6 +114,12 @@
                          Parent="#infinite-scroll-usage">
         </MInfiniteScroll>
     </MCard>
+    <CommentBar ToggleLike="() => ToggleTopicLike(postInfo)"
+                ToggleDisLike="() => ToggleTopicBad(postInfo)"
+                IsLike="postInfo.IsLike"
+                IsDisLike="postInfo.IsBad"
+                LikeNum="postInfo.LikeNum"
+                CommentNum="postInfo.CommentNum" />
 }
 
 <style>
