@@ -1,0 +1,24 @@
+.post-comment-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-content: center;
+}
+
+
+.post-comment-header-toolbar {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    align-items: center;
+    height: 48px;
+    font-size: .875rem;
+    font-weight: 400;
+    padding: 0 16px 0 16px;
+    color: rgba(var(--m-theme-on-surface), var(--m-medium-emphasis-opacity));
+    gap: .3rem;
+}
+
+.post-comment-header-toolbar-item-active {
+    color: rgba(var(--m-theme-on-surface));
+}

@@ -25,3 +25,29 @@ export function setScrollPosition(elementId, top) {
         console.warn(`Element with id ' $ {elementId}' not found.`);
     }
 }
+
+/**
+ * 滚动到指定元素处
+ * @param {string} elementId 目标元素ID
+ */
+export function scrollToIdContainer(elementId) {
+    if (!elementId) {
+        console.warn('scrollToIdContainer: elementId is required');
+        return;
+    }
+
+    // 获取目标元素
+    const element = document.getElementById(elementId);
+
+    if (!element) {
+        console.warn(`scrollToIdContainer: Element with id "${elementId}" not found`);
+        return;
+    }
+
+    // 平滑滚动到元素位置
+    element.scrollIntoView({
+        behavior: 'smooth',  // 平滑滚动
+        block: 'start',      // 元素顶部对齐视口顶部
+        inline: 'nearest'    // 水平方向最近对齐（通常不需要水平滚动）
+    });
+}

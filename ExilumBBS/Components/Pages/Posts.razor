@@ -17,6 +17,7 @@
 @inject ITokenService tokenService
 @inject IPopupService popupService
 @inject INavigationService navigationService
+@inject IJSRuntime js
 
 @inject AppState appState
 
@@ -103,7 +104,15 @@
             <MDivider />
         </MList>
 
-        <MSubheader>评论(@postInfo.CommentNum)</MSubheader>
+        <div class="post-comment-header" id="post-comment">
+            <MSubheader>评论(@postInfo.CommentNum)</MSubheader>
+            <div class="post-comment-header-toolbar">
+                <span class="@(Sort == 0 ? "post-comment-header-toolbar-item-active" : "")" @onclick="() => SwitchSortType(0)">默认</span>
+                <span class="@(Sort == 1 ? "post-comment-header-toolbar-item-active" : "")" @onclick="() => SwitchSortType(1)">最早</span>
+                <span class="@(Sort == 2 ? "post-comment-header-toolbar-item-active" : "")" @onclick="() => SwitchSortType(2)">最新</span>
+            </div>
+        </div>
+
         @if (commentList.Count > 0)
         {
             <Comment Comments="commentList" TopicId="Id">
@@ -158,6 +167,8 @@
     private PostCommentFilterDTO? filterDTO;
 
     private CommentPopup? commentPopup;
+
+    private IJSObjectReference jsTools = default!;
 
     /// <summary>
     /// 发布新评论面板是否可见
@@ -325,6 +336,20 @@
     }
 
     /// <summary>
+    /// 切换排序模式
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    private async Task SwitchSortType(int type)
+    {
+        this.Sort = type;
+        filterDTO = null;
+        NextPage = true;
+        commentList = [];
+        await PostTopicCommentList();
+    }
+
+    /// <summary>
     /// 发送评论
     /// </summary>
     /// <returns></returns>
@@ -348,7 +373,14 @@
             {
                 NewCommentIsVisable = false;
                 popupService.ShowSuccessToast("发送成功");
-                await PostTopicCommentList();
+                if (postInfo.CommentNum is int num)
+                {
+                    postInfo.CommentNum = num + 1;
+                }
+
+                // 按最新模式重新加载评论
+                await SwitchSortType(2);
+                await jsTools.InvokeVoidAsync("scrollToIdContainer", "post-comment");
             }
         }
 
@@ -363,6 +395,11 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            // 导入JS工具类
+            jsTools = await js.InvokeAsync<IJSObjectReference>("import", "./js/jstools.js");
+        }
         await base.OnAfterRenderAsync(firstRender);
     }
 
