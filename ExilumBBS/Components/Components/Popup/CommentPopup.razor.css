@@ -56,6 +56,28 @@
     justify-content: center;
 }
 
+.comment-imgList {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    height: 48px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 0.3rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.comment-imgList-item {
+    height: 48px;
+    width: 48px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 #quill-editor {
     height: 150px;
 }

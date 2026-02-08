@@ -12,6 +12,15 @@
         @EditorContent
     </div>
 
+    <div class="comment-imgList mt-2">
+        @foreach (var item in UploadImgs)
+        {
+            <div class="comment-imgList-item">
+                <img src="@item" />
+            </div>
+        }
+    </div>
+
     <div class="comment-popup-submit mt-2">
         <MButton OnClick="SendComment">发送</MButton>
     </div>
@@ -62,31 +71,19 @@
     [Parameter]
     public EventCallback SendComment { get; set; }
 
+    /// <summary>
+    /// 已上传的图片
+    /// </summary>
+    public List<string> UploadImgs { get; set; } = [];
+
     private ElementReference QuillElement;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-        }
-
-        // 在评论面板显示后再渲染Quill
-        if (Visible == true)
-        {
-            await QuillInterop.CreateQuill(
-                JS,
-                QuillElement,
-                false,
-                "说点什么",
-                "snow",
-                "info");
-        }
-    }
 
     /// <summary>
     /// 表情选择面板可见性
     /// </summary>
     private bool EmojiSelectVisible { get; set; }
+
+    private bool _quillInitialized = false; // 防止重复初始化
 
     private List<EmojiCategory>? emojiList { get; set; }
 
@@ -99,11 +96,27 @@
         await VisibleChanged.InvokeAsync(value);
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Visible && !_quillInitialized)
+        {
+            await QuillInterop.CreateQuill(
+                JS,
+                QuillElement,
+                false,
+                "说点什么",
+                "snow",
+                "info");
+            _quillInitialized = true;
+            await QuillInterop.FocusQuill(JS, QuillElement);
+        }
+    }
+
     /// <summary>
     /// 选取图片并上传
     /// </summary>
     /// <returns></returns>
-    private async Task<List<FileResult>?> PickAndUpload()
+    private async Task PickAndUpload()
     {
         try
         {
@@ -111,8 +124,6 @@
             {
                 // 限制选取图片数量（0为不限制）
                 SelectionLimit = 0,
-                // Optional processing for images
-                CompressionQuality = 85,
                 RotateImage = false,
                 PreserveMetaData = false,
             });
@@ -140,15 +151,13 @@
 
             }
 
-            return results;
+            UploadImgs.AddRange(uploadUrlList);
         }
         catch (Exception ex)
         {
             // 打印错误信息
             Debug.Fail(ex.Message);
         }
-
-        return null;
     }
 
     /// <summary>
@@ -159,8 +168,9 @@
     {
         if (EmojiSelectVisible)
         {
-            emojiList = [];
             EmojiSelectVisible = false;
+            // 表情面板关闭后，主动聚焦回编辑器（提升体验）
+            await QuillInterop.FocusQuill(JS, QuillElement);
         }
         else
         {
@@ -214,7 +224,6 @@
     private async Task InsertEmoji(string emojiUrl)
     {
         await QuillInterop.InsertQuillEmoji(JS, QuillElement, emojiUrl);
-        await QuillInterop.FocusToEnd(JS, QuillElement);
     }
 
     /// <summary>
@@ -224,5 +233,19 @@
     public async Task<string> GetHTMLContent()
     {
         return await QuillInterop.GetHTML(JS, QuillElement);
+    }
+
+    /// <summary>
+    /// 发布前调用该方法将已上传的图片插入HTML
+    /// </summary>
+    /// <returns></returns>
+    public async Task CommentAddUploadImgs()
+    {
+        foreach (var item in UploadImgs)
+        {
+            await QuillInterop.InsertQuillImage(JS, QuillElement, item);
+        }
+
+        UploadImgs = [];
     }
 }

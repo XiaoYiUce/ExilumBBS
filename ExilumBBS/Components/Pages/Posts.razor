@@ -350,6 +350,8 @@
     {
         if (commentPopup != null && postInfo != null)
         {
+            await commentPopup.CommentAddUploadImgs();
+
             var htmlContent = await commentPopup.GetHTMLContent();
 
             Debug.WriteLine(htmlContent);

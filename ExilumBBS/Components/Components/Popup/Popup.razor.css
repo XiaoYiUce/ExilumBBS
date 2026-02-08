@@ -16,7 +16,7 @@
 /* 底部弹出层 - 内容区 */
 .bottom-popup-content {
     width: 100%;
-    max-height: 80vh;
+    max-height: 90vh;
     background-color: rgba(var(--m-theme-surface-container));
     color: rgba(var(--m-theme-on-surface));
     border-top-left-radius: 16px;

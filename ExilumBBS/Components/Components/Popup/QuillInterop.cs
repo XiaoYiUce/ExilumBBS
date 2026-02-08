@@ -19,6 +19,7 @@ namespace ExilumBBS.Components.Components.Popup
         private const string strInsertImage = "QuillFunctions.insertQuillImage";
         private const string strInsertEmoji = "QuillFunctions.insertQuillEmoji";
         private const string strFocusToEnd = "QuillFunctions.quillFocusToEnd";
+        private const string strQuillFocus = "QuillFunctions.focusQuill";
 
         #endregion Constants
 
@@ -174,6 +175,14 @@ namespace ExilumBBS.Components.Components.Popup
         {
             return jsRuntime.InvokeAsync<object>(
                 strFocusToEnd, quillElement);
+        }
+
+        internal static ValueTask<object> FocusQuill(
+            IJSRuntime jsRuntime,
+            ElementReference quillElement)
+        {
+            return jsRuntime.InvokeAsync<object>(
+                strQuillFocus, quillElement);
         }
     }
 }

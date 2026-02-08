@@ -94,16 +94,20 @@
         },
         insertQuillImage: function (quillElement, imageURL) {
             var quill = quillElement.__quill;
-            var editorIndex = quill.getSelection() ? quill.getSelection().index : 0;
-            return this._insertExtendedImage(quill, editorIndex, imageURL);
+            var editorIndex = quill.getLength();
+            return this._insertExtendedImage(quill, editorIndex, imageURL, {
+                class: "showImg"
+            });
         },
         insertQuillEmoji: function (quillElement, emojiURL, altText = '') {
             var quill = quillElement.__quill;
             var editorIndex = quill.getSelection() ? quill.getSelection().index : 0;
-            return this._insertExtendedImage(quill, editorIndex, emojiURL, {
+            var newIndex = this._insertExtendedImage(quill, editorIndex, emojiURL, {
                 class: 'emoji',
                 alt: altText
             });
+            quill.setSelection(editorIndex + 1);
+            return newIndex;
         },
         quillFocusToEnd: function (quillElement) {
             var quill = quillElement.__quill;
@@ -115,6 +119,12 @@
                 // ¾Û½¹±à¼­Æ÷
                 quill.focus();
             }
-        }
+        },
+        focusQuill: function (element) {
+            const quill = element.__quill;
+            if (quill) {
+                quill.focus();
+            }
+        },
     };
 })();
