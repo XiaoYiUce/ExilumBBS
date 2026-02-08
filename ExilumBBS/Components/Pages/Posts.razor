@@ -350,9 +350,16 @@
     {
         if (commentPopup != null && postInfo != null)
         {
-            await commentPopup.CommentAddUploadImgs();
+            // await commentPopup.CommentAddUploadImgs();
 
             var htmlContent = await commentPopup.GetHTMLContent();
+
+            // 将已上传的图片插入帖子末端
+            foreach (var item in commentPopup.UploadImgs)
+            {
+                htmlContent = htmlContent + $"<img src=\"{item}\" class=\"showImg\">";
+            }
+
 
             Debug.WriteLine(htmlContent);
             var response = await httpTools.PostAsync("/community/comment/reply", new
