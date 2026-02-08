@@ -37,17 +37,26 @@
     window.QuillFunctions = {
         createQuill: function (
             quillElement, readOnly,
-            placeholder, theme, debugLevel) {
+            placeholder, theme, debugLevel, toolbar) {
 
             var options = {
                 debug: debugLevel,
                 modules: {
-                    toolbar: false
                 },
                 placeholder: placeholder,
                 readOnly: readOnly,
                 theme: theme
             };
+
+            if (toolbar === false || toolbar == null) {
+                options.modules.toolbar = false;
+            } else if (toolbar === true) {
+                // 启用默认 toolbar（Quill 默认的完整工具栏）
+                options.modules.toolbar = true;
+            } else {
+                // 自定义 toolbar 配置（数组或对象）
+                options.modules.toolbar = toolbar;
+            }
 
             var quill = new Quill(quillElement, options);
             quillElement.__quill = quill;

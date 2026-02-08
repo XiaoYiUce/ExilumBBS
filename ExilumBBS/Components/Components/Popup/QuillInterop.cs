@@ -39,12 +39,24 @@ namespace ExilumBBS.Components.Components.Popup
             bool readOnly,
             string placeholder,
             string theme,
-            string debugLevel)
+            string debugLevel,
+            bool enabledToolbar)
         {
-            return jsRuntime.InvokeAsync<object>(
-                strCreateQuill,
-                quillElement, readOnly,
-                placeholder, theme, debugLevel);
+            if (enabledToolbar == false)
+            {
+                return jsRuntime.InvokeAsync<object>(
+                    strCreateQuill,
+                    quillElement, readOnly,
+                    placeholder, theme, debugLevel, false);
+            }
+            else
+            {
+                return jsRuntime.InvokeAsync<object>(
+                    strCreateQuill,
+                    quillElement, readOnly,
+                    placeholder, theme, debugLevel, true);
+            }
+
         }
 
         /// <summary>
@@ -62,12 +74,22 @@ namespace ExilumBBS.Components.Components.Popup
             bool readOnly,
             string placeholder,
             string theme,
-            string debugLevel)
+            string debugLevel,
+            bool enabledToolbar)
         {
-            return jsRuntime.InvokeAsync<object>(
-                strCreateQuill,
-                quillId, readOnly,
-                placeholder, theme, debugLevel);
+            if (enabledToolbar == false)
+            {
+                return jsRuntime.InvokeAsync<object>(
+                    strCreateQuill, quillId, readOnly,
+                    placeholder, theme, debugLevel, false);
+            }
+            else
+            {
+                return jsRuntime.InvokeAsync<object>(
+                    strCreateQuill, quillId, readOnly,
+                    placeholder, theme, debugLevel, true);
+            }
+
         }
 
         /// <summary>

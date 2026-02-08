@@ -106,7 +106,8 @@
                 false,
                 "说点什么",
                 "snow",
-                "info");
+                "info",
+                false);
             _quillInitialized = true;
             await QuillInterop.FocusQuill(JS, QuillElement);
         }
@@ -233,19 +234,5 @@
     public async Task<string> GetHTMLContent()
     {
         return await QuillInterop.GetHTML(JS, QuillElement);
-    }
-
-    /// <summary>
-    /// 发布前调用该方法将已上传的图片插入HTML
-    /// </summary>
-    /// <returns></returns>
-    public async Task CommentAddUploadImgs()
-    {
-        foreach (var item in UploadImgs)
-        {
-            await QuillInterop.InsertQuillImage(JS, QuillElement, item);
-        }
-
-        UploadImgs = [];
     }
 }

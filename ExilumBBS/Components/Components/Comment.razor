@@ -139,12 +139,13 @@
 
 
                     <div class="d-flex align-center ml-10">
-                        <MButton Icon
+                        <MButton Text
                                  Size="small"
                                  OnClick="() => {}">
                             <MIcon left>mdi-comment-outline</MIcon>
+                            <span class="text-caption text--secondary">@comment.ReplyNum</span>
                         </MButton>
-                        <span class="text-caption text--secondary">@comment.ReplyNum</span>
+
                         <MButton Icon
                                  Size="small"
                                  Color="@(comment.IsLike ? "primary" : "default")"
