@@ -130,7 +130,8 @@
                 IsLike="postInfo.IsLike"
                 IsDisLike="postInfo.IsBad"
                 LikeNum="postInfo.LikeNum"
-                CommentNum="postInfo.CommentNum" />
+                CommentNum="postInfo.CommentNum"
+                ToComment="()=>ToComment()" />
 
     <CommentPopup @bind-Visible="NewCommentIsVisable" @ref="commentPopup" SendComment="() => SendComment()">
         <EditorContent>
@@ -139,23 +140,6 @@
     </CommentPopup>
 
 }
-
-<style>
-    .emoji {
-        width: 3rem;
-        height: 3rem;
-    }
-
-    img {
-        max-width: 100%;
-    }
-
-    .post-title {
-        font-size: 1.5rem;
-        font-weight: 200;
-        padding-bottom: 1rem;
-    }
-</style>
 
 
 @code {
@@ -187,6 +171,15 @@
     /// 是否还有下一页
     /// </summary>
     private bool NextPage { get; set; } = true;
+
+    /// <summary>
+    /// 跳转到评论区
+    /// </summary>
+    /// <returns></returns>
+    private async Task ToComment()
+    {
+        await jsTools.InvokeVoidAsync("scrollToIdContainer", "post-comment");
+    }
 
     /// <summary>
     /// 获取帖子主体信息

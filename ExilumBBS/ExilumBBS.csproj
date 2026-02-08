@@ -83,6 +83,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Flurl.Http" Version="4.0.2" />
 		<PackageReference Include="Masa.Blazor" Version="1.11.9" />
 		<PackageReference Include="Masa.Blazor.MobileComponents" Version="1.11.9" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.31" />

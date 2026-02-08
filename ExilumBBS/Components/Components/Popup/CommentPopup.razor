@@ -2,6 +2,7 @@
 @using ExilumBBS.Models.DTO.Emoji
 @using ExilumBBS.Models.Response.Emoji
 @using System.Diagnostics
+@using ExilumBBS.Models.Response.Signature
 @inject HttpTools httpTools
 @inject IJSRuntime JS
 
@@ -15,8 +16,8 @@
         <MButton OnClick="SendComment">发送</MButton>
     </div>
     <div class="comment-popup-toolbar">
-        <MIcon OnClick="() => OpenEmojiList()">mdi-emoticon-happy-outline</MIcon>
-        <MIcon OnClick="() => PickAndShow(PickOptions.Images)">mdi-image</MIcon>
+        <MIcon OnClick="() => SwitchEmojiList()">mdi-emoticon-happy-outline</MIcon>
+        <MIcon OnClick="() => PickAndUpload()">mdi-image</MIcon>
     </div>
     @if (EmojiSelectVisible)
     {
@@ -63,14 +64,13 @@
 
     private ElementReference QuillElement;
 
-    private ElementReference ToolbarElement;
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
         }
 
+        // 在评论面板显示后再渲染Quill
         if (Visible == true)
         {
             await QuillInterop.CreateQuill(
@@ -99,38 +99,81 @@
         await VisibleChanged.InvokeAsync(value);
     }
 
-    private async Task<List<FileResult>?> PickAndShow(PickOptions options)
+    /// <summary>
+    /// 选取图片并上传
+    /// </summary>
+    /// <returns></returns>
+    private async Task<List<FileResult>?> PickAndUpload()
     {
         try
         {
             var results = await MediaPicker.PickPhotosAsync(new MediaPickerOptions
             {
-                // Default is 1; set to 0 for no limit
-                SelectionLimit = 10,
+                // 限制选取图片数量（0为不限制）
+                SelectionLimit = 0,
                 // Optional processing for images
-                MaximumWidth = 1024,
-                MaximumHeight = 768,
                 CompressionQuality = 85,
-                RotateImage = true,
-                PreserveMetaData = true,
+                RotateImage = false,
+                PreserveMetaData = false,
             });
+
+            var uploadUrlList = new List<string>();
+
+            var signatureResponse = await httpTools.PostAsync("/community/signature", null);
+            if (signatureResponse != null && signatureResponse.Code == 0 && signatureResponse.Data.HasValue)
+            {
+                var signature = signatureResponse.Data.Value.Deserialize<SignatureResponse>();
+
+                if (signature != null)
+                {
+                    foreach (var item in results)
+                    {
+                        var uploadName = await httpTools.UploadToOSS(signature.Host, signature.Policy, signature.AccessId, signature.Dir, signature.Signature, item);
+                        if (!string.IsNullOrEmpty(uploadName))
+                        {
+                            // 将上传完成的图片地址加入到URL中
+                            uploadUrlList.Add($"{signature.CDNHost}/{signature.Dir}{uploadName}");
+                            Debug.WriteLine($"OSS图片地址:{signature.CDNHost}/{signature.Dir}{uploadName}");
+                        }
+                    }
+                }
+
+            }
 
             return results;
         }
         catch (Exception ex)
         {
-            // The user canceled or something went wrong
+            // 打印错误信息
+            Debug.Fail(ex.Message);
         }
 
         return null;
     }
 
-    private async Task OpenEmojiList()
+    /// <summary>
+    /// 切换表情包面板状态
+    /// </summary>
+    /// <returns></returns>
+    private async Task SwitchEmojiList()
     {
-        await GetEmojiList();
-        EmojiSelectVisible = true;
+        if (EmojiSelectVisible)
+        {
+            emojiList = [];
+            EmojiSelectVisible = false;
+        }
+        else
+        {
+            await GetEmojiList();
+            EmojiSelectVisible = true;
+        }
     }
 
+    /// <summary>
+    /// 切换表情包
+    /// </summary>
+    /// <param name="ClassifyId"></param>
+    /// <returns></returns>
     private async Task SwitchSelectedEmoji(int ClassifyId)
     {
         if (emojiList != null)
@@ -163,6 +206,11 @@
         }
     }
 
+    /// <summary>
+    /// 插入选定表情
+    /// </summary>
+    /// <param name="emojiUrl"></param>
+    /// <returns></returns>
     private async Task InsertEmoji(string emojiUrl)
     {
         await QuillInterop.InsertQuillEmoji(JS, QuillElement, emojiUrl);
