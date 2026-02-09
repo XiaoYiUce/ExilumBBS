@@ -1,0 +1,33 @@
+﻿@page "/post/new"
+@using ExilumBBS.State
+
+@inject AppState appState
+@inject INavigationService navigationService
+@inject NavigationManager navigationManager
+
+@layout WithBackLayout
+
+<div class="newtopic-container">
+    <MTextField @bind-Value="TopicTitle"
+                Solo
+                Type="text"
+                Required
+                Hint="输入帖子标题"
+                Placeholder="输入帖子标题"
+                Class="mt-2">
+    </MTextField>
+    <QuillEditor Class="">
+
+    </QuillEditor>
+</div>
+
+
+@code {
+    private string TopicTitle { get; set; } = "";
+    protected override Task OnInitializedAsync()
+    {
+        navigationService.Initialize(navigationManager);
+        appState.WithbackLayoutState.AppBarTitle = "发布新帖子";
+        return base.OnInitializedAsync();
+    }
+}

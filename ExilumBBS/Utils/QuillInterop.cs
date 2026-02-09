@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ExilumBBS.Components.Components.Popup
+namespace ExilumBBS.Utils
 {
     public static class QuillInterop
     {

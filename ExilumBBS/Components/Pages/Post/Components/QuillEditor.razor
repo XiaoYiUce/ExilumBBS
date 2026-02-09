@@ -1,0 +1,28 @@
+﻿@namespace ExilumBBS.Components
+
+@inject IJSRuntime JS
+
+<div @ref="QuillElement" class="editor @Class"></div>
+
+@code {
+    [Parameter]
+    public string? Class { get; set; }
+    private ElementReference QuillElement { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await QuillInterop.CreateQuill(
+                JS,
+                QuillElement,
+                false,
+                "说点什么",
+                "snow",
+                "info",
+                true);
+            await QuillInterop.FocusQuill(JS, QuillElement);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}

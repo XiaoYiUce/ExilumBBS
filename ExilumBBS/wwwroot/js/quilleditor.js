@@ -1,7 +1,18 @@
 (function () {
-    var Parchment = Quill.import('parchment');
+    const Block = Quill.import('blots/block/embed');
+    const fontSize = ['10px', '13px', '16px', '18px', '24px', '32px', '48px']
+    const defaultToolbarContainer = [
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        ['bold'],
+        [{ 'size': fontSize }],
+        ['italic', 'underline', 'strike'],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'align': [] }],
+        ['clean']
+    ]
 
-    class ExtendedImage extends Parchment.Embed {
+    class ExtendedImage extends Block {
         static create(value) {
             const node = super.create();
             if (typeof value === 'string') {
@@ -34,6 +45,9 @@
     ExtendedImage.tagName = 'img';
     Quill.register(ExtendedImage);
 
+    Quill.imports['attributors/style/size'].whitelist = fontSize;
+    Quill.register(Quill.imports['attributors/style/size']);
+
     window.QuillFunctions = {
         createQuill: function (
             quillElement, readOnly,
@@ -52,7 +66,12 @@
                 options.modules.toolbar = false;
             } else if (toolbar === true) {
                 // 启用默认 toolbar（Quill 默认的完整工具栏）
-                options.modules.toolbar = true;
+                let toolbarConfig = {
+                    container: defaultToolbarContainer,
+                    handlers: {}
+                };
+
+                options.modules.toolbar = toolbarConfig;
             } else {
                 // 自定义 toolbar 配置（数组或对象）
                 options.modules.toolbar = toolbar;
