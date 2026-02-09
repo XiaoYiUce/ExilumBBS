@@ -3,11 +3,11 @@
 @inject IJSRuntime JS
 
 <div>
-    <div @ref="QuillToolbarElement">
+    @* <div @ref="QuillToolbarElement">
         <dlv id="header-select" class="toolbar-item">
             <MMenu OffsetY>
                 <ActivatorContent>
-                    <MIcon Dense @attributes="@context.Attrs">mdi-format-title</MIcon>
+                    <MIcon Dense @attributes="@context.Attrs" OnClick="() => { }">mdi-format-title</MIcon>
                 </ActivatorContent>
 
                 <ChildContent>
@@ -51,7 +51,7 @@
         <div id="font-size" class="toolbar-item">
             <MMenu OffsetY>
                 <ActivatorContent>
-                    <MIcon Dense @attributes="@context.Attrs">mdi-format-size</MIcon>
+                    <MIcon Dense @attributes="@context.Attrs" OnClick="() => { }">mdi-format-size</MIcon>
                 </ActivatorContent>
 
                 <ChildContent>
@@ -74,7 +74,7 @@
         <div id="lineheight" class="toolbar-item">
             <MMenu OffsetY>
                 <ActivatorContent>
-                    <MIcon Dense @attributes="@context.Attrs">mdi-format-line-spacing</MIcon>
+                    <MIcon Dense @attributes="@context.Attrs" OnClick="() => { }">mdi-format-line-spacing</MIcon>
                 </ActivatorContent>
 
                 <ChildContent>
@@ -103,10 +103,17 @@
         <select class=ql-align>
         </select>
         <button class="ql-table-better"></button>
-        <div id="insert-divider" class="toolbar-item" @onclick="() => QuillInterop.InsertDivider(JS, QuillElement)">
-            <MIcon Dense>mdi-minus</MIcon>
+        <div id="insert-divider" class="toolbar-item">
+            <MIcon OnClick="() => QuillInterop.InsertDivider(JS, QuillElement)" Dense>mdi-minus</MIcon>
         </div>
-    </div>
+        <div id="insert-divider" class="toolbar-item">
+            <MIcon OnClick="() => QuillInterop.InsertDivider(JS, QuillElement)" Dense>mdi-image</MIcon>
+        </div>
+        <div id="insert-divider" class="toolbar-item">
+            <MIcon Dense OnClick="() => { }">mdi-emoticon-happy-outline</MIcon>
+        </div>
+
+    </div> *@
     <div @ref="QuillElement" class="editor @Class"></div>
 </div>
 
@@ -123,6 +130,15 @@
     private readonly List<string> FontSizeList = ["10px", "13px", "16px", "18px", "24px", "32px", "48px"];
     private readonly List<string> HeaderSizeList = ["正文", "H1", "H2", "H3", "H4", "H5", "H6"];
     private readonly List<string> LineHeightSizeList = ["默认", "1", "1.15", "1.6", "2", "2.5", "3"];
+
+    /// <summary>
+    /// 获取HTML
+    /// </summary>
+    /// <returns></returns>
+    public async Task<string> GetHTMLContent()
+    {
+        return await QuillInterop.GetHTML(JS, QuillElement);
+    }
 
     /// <summary>
     /// 设置标题大小
@@ -145,8 +161,7 @@
                 "说点什么",
                 "snow",
                 "info",
-                true,
-                QuillToolbarElement);
+                false);
             await QuillInterop.FocusQuill(JS, QuillElement);
         }
         await base.OnAfterRenderAsync(firstRender);

@@ -1,13 +1,44 @@
 ﻿@page "/post/new"
+@using ExilumBBS.Models.DTO.Post
+@using ExilumBBS.Models.Response.Category
+@using ExilumBBS.Models.Response.HotTheme
 @using ExilumBBS.State
+@using System.Text.Json
 
 @inject AppState appState
+@inject HttpTools httpTools
 @inject INavigationService navigationService
 @inject NavigationManager navigationManager
+@inject IPopupService popupService
 
 @layout WithBackLayout
 
 <div class="newtopic-container">
+    <div class="newtopic-toptoolbar mt-2">
+        <div style="align-items:center;align-content:center;">选择版面</div>
+        <MMenu OffsetY>
+            <ActivatorContent>
+                <MButton Color="primary" @attributes="@context.Attrs">@SelectCategoryName</MButton>
+            </ActivatorContent>
+
+            <ChildContent>
+                <MList>
+                    @foreach (var item in CategoryList)
+                    {
+                        @if (item.Name != "官方")
+                        {
+                            <MListItem OnClick="() => SelectedCategory = item.Id">
+                                <MListItemContent>
+                                    @item.Name
+                                </MListItemContent>
+                            </MListItem>
+                        }
+
+                    }
+                </MList>
+            </ChildContent>
+        </MMenu>
+    </div>
     <MTextField @bind-Value="TopicTitle"
                 Solo
                 Type="text"
@@ -16,18 +47,126 @@
                 Placeholder="输入帖子标题"
                 Class="mt-2">
     </MTextField>
-    <QuillEditor Class="">
+    <QuillEditor Class="" @ref="EditorContent">
 
     </QuillEditor>
+
+    <div style="display:flex;flex-direction:row;align-items:center;">
+        创作声明
+        <MRadioGroup @bind-Value="Notice" Row Color="primary">
+            <MRadio Label="未经授权禁止转载"
+                    Value="0">
+            </MRadio>
+            <MRadio Label="允许规范转载"
+                    Value="1">
+            </MRadio>
+        </MRadioGroup>
+    </div>
+
+    <div class="newtopic-toptoolbar mt-2">
+        <div style="align-items:center;align-content:center;">选择话题</div>
+        <MMenu OffsetY>
+            <ActivatorContent>
+                <MButton Color="primary" @attributes="@context.Attrs">@SelectHotThemeName</MButton>
+            </ActivatorContent>
+
+            <ChildContent>
+                <MList>
+                    @foreach (var item in HotThemeList)
+                    {
+                        <MListItem OnClick="() => SelectHotTheme = item.Id">
+                            <MListItemContent>
+                                @item.Name
+                            </MListItemContent>
+                        </MListItem>
+                    }
+                </MList>
+            </ChildContent>
+        </MMenu>
+    </div>
+
+
+    <div class="newtopic-submit mt-4">
+        <MButton OnClick="() => Publish()">发送</MButton>
+    </div>
 </div>
 
 
 @code {
     private string TopicTitle { get; set; } = "";
-    protected override Task OnInitializedAsync()
+
+    private QuillEditor? EditorContent { get; set; }
+
+    private List<CategoryItem> CategoryList { get; set; } = [];
+    private List<HotThemeItem> HotThemeList { get; set; } = [];
+
+    private string SelectCategoryName => CategoryList.Count > 0 ? CategoryList.Where(it => it.Id == SelectedCategory).First().Name : "请选择分类";
+    private int SelectedCategory = 0;
+
+    private string SelectHotThemeName => HotThemeList.Count > 0
+                                         && SelectHotTheme != -1 ? HotThemeList.Where(it => it.Id == SelectHotTheme).First().Name : "选择话题";
+    private int SelectHotTheme = -1;
+
+    /// <summary>
+    /// 对应declare
+    /// </summary>
+    private int Notice = 0;
+
+    private async Task Publish()
+    {
+        var newTopic = new PostNewTopic()
+        {
+            CategoryId = SelectedCategory,
+            Title = TopicTitle,
+            Content = await EditorContent!.GetHTMLContent(),
+            Code = "",
+            ThemeInfo = new List<HotThemeItem>(),
+            Declare = Notice
+        };
+        var response = await httpTools.PostAsync("/community/topic/publish", newTopic);
+        if (response != null && response.Code == 0)
+        {
+            popupService.ShowSuccessToast("发送成功!");
+        }
+    }
+
+    /// <summary>
+    /// 获取分类
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetPublishCategory()
+    {
+        var response = await httpTools.GetAsync("/community/publish_category");
+        if (response != null && response.Code == 0 && response.Data.HasValue)
+        {
+            var categoryList = response.Data.Value.GetProperty("list").Deserialize<List<CategoryItem>>();
+            if (categoryList != null)
+            {
+                SelectedCategory = categoryList.Where(it => it.Name != "官方").First().Id;
+                CategoryList.AddRange(categoryList);
+            }
+        }
+    }
+
+    private async Task GetHotTheme()
+    {
+        var response = await httpTools.PostAsync("/community/hot_theme", null);
+        if (response != null && response.Code == 0 && response.Data.HasValue)
+        {
+            var hotThemeList = response.Data.Value.GetProperty("theme_list").Deserialize<List<HotThemeItem>>();
+            if (hotThemeList != null)
+            {
+                HotThemeList.AddRange(hotThemeList);
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
     {
         navigationService.Initialize(navigationManager);
         appState.WithbackLayoutState.AppBarTitle = "发布新帖子";
-        return base.OnInitializedAsync();
+        await GetPublishCategory();
+        await GetHotTheme();
+        await base.OnInitializedAsync();
     }
 }
