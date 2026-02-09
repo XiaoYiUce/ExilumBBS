@@ -117,7 +117,7 @@
                 options.modules.toolbar = toolbarConfig;
                 options.modules['table-better'] = {
                     language: 'zh_CN',
-                    menus: ['column', 'row', 'merge', 'table', 'cell', 'wrap', 'copy', 'delete'],
+                    menus: ['column', 'row', 'delete'],
                     toolbarTable: true
                 };
             }

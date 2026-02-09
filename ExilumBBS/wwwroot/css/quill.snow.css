@@ -581,7 +581,7 @@
 }
 
 .ql-editor.ql-blank::before {
-    color: rgba(0,0,0,0.6);
+    color: rgba(var(--m-theme-on-surface),0.5);
     content: attr(data-placeholder);
     font-style: italic;
     left: 15px;
@@ -689,7 +689,7 @@
 
     .ql-snow .ql-stroke {
         fill: none;
-        stroke: #444;
+        stroke: rgba(var(--m-theme-on-surface));
         stroke-linecap: round;
         stroke-linejoin: round;
         stroke-width: 2
@@ -703,7 +703,7 @@
     }
 
     .ql-snow .ql-fill, .ql-snow .ql-stroke.ql-fill {
-        fill: #444
+        fill: rgba(var(--m-theme-on-surface))
     }
 
     .ql-snow .ql-empty {
@@ -822,7 +822,7 @@
         }
 
     .ql-snow .ql-picker-options {
-        background-color: #fff;
+/*        background-color: #fff;*/
         display: none;
         min-width: 100%;
         padding: 4px 8px;
