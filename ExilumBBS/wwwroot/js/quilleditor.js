@@ -1,6 +1,10 @@
 (function () {
-    const Block = Quill.import('blots/block/embed');
+    const BlockEmbed = Quill.import('blots/block/embed');
+    const Parchment = Quill.import('parchment')
     const fontSize = ['10px', '13px', '16px', '18px', '24px', '32px', '48px']
+    const lineHeight = ['', '1', '1.15', '1.6', '2', '2.5', '3'];
+
+    // 默认工具栏容器
     const defaultToolbarContainer = [
         [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
         ['bold'],
@@ -12,7 +16,39 @@
         ['clean']
     ]
 
-    class ExtendedImage extends Block {
+    // 插入行高format
+    class lineHeightAttributor extends Parchment.StyleAttributor { }
+
+    const lineHeightStyle = new lineHeightAttributor(
+        'lineHeight',
+        'line-height',
+        {
+            scope: Parchment.Scope.Block,
+            whitelist: lineHeight
+        }
+    )
+    Quill.register({ 'formats/lineHeight': lineHeightStyle }, true)
+
+    // 插入自定义的分割线模块
+    class DividerBlot extends BlockEmbed {
+        static create() {
+            return document.createElement('hr');
+        }
+
+        length() {
+            return 1;
+        }
+
+        static value() {
+            return true;
+        }
+    }
+    DividerBlot.tagName = 'hr';
+    DividerBlot.blotName = 'divider';
+    Quill.register(DividerBlot);
+
+    // 自定义图像插入
+    class ExtendedImage extends BlockEmbed {
         static create(value) {
             const node = super.create();
             if (typeof value === 'string') {
@@ -43,15 +79,21 @@
 
     ExtendedImage.blotName = 'extendedImage';
     ExtendedImage.tagName = 'img';
+
+    // 注册自定义项
     Quill.register(ExtendedImage);
 
+    // 注册自定义字体大小
     Quill.imports['attributors/style/size'].whitelist = fontSize;
     Quill.register(Quill.imports['attributors/style/size']);
+    Quill.register({
+        'modules/table-better': QuillTableBetter
+    }, true);
 
     window.QuillFunctions = {
         createQuill: function (
             quillElement, readOnly,
-            placeholder, theme, debugLevel, toolbar) {
+            placeholder, theme, debugLevel, toolbar, toolbarElement) {
 
             var options = {
                 debug: debugLevel,
@@ -64,17 +106,20 @@
 
             if (toolbar === false || toolbar == null) {
                 options.modules.toolbar = false;
-            } else if (toolbar === true) {
+            }
+            else {
                 // 启用默认 toolbar（Quill 默认的完整工具栏）
                 let toolbarConfig = {
-                    container: defaultToolbarContainer,
+                    container: toolbarElement.childNodes.length == 0 ? defaultToolbarContainer : toolbarElement,
                     handlers: {}
                 };
 
                 options.modules.toolbar = toolbarConfig;
-            } else {
-                // 自定义 toolbar 配置（数组或对象）
-                options.modules.toolbar = toolbar;
+                options.modules['table-better'] = {
+                    language: 'zh_CN',
+                    menus: ['column', 'row', 'merge', 'table', 'cell', 'wrap', 'copy', 'delete'],
+                    toolbarTable: true
+                };
             }
 
             var quill = new Quill(quillElement, options);
@@ -148,11 +193,42 @@
                 quill.focus();
             }
         },
-        focusQuill: function (element) {
-            const quill = element.__quill;
+        focusQuill: function (quillElement) {
+            const quill = quillElement.__quill;
             if (quill) {
                 quill.focus();
             }
         },
+        setQuillFontSize: function (quillElement, size) {
+            const quill = quillElement.__quill;
+            if (quill) {
+                quill.format('size', size);
+            }
+        },
+        setQuillHeaderSize: function (quillElement, size) {
+            const quill = quillElement.__quill;
+            if (quill) {
+                quill.format('header', size);
+            }
+        },
+        setLineHeightSize: function (quillElement, size) {
+            const quill = quillElement.__quill;
+            if (quill) {
+                quill.format('lineHeight', size);
+            }
+        },
+        insertDivider: function (quillElement) {
+            var quill = quillElement.__quill;
+            var Delta = Quill.import('delta');
+            var index = quill.getSelection() ? quill.getSelection().index : 0;
+            var newIndex = quill.updateContents(
+                new Delta()
+                    .retain(index)
+                    .insert({ divider: true })
+                    .insert('\n')
+            );
+            quill.setSelection(index + 2);
+            return newIndex;
+        }
     };
 })();

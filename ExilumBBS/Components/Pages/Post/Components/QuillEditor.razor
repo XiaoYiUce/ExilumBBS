@@ -2,12 +2,137 @@
 
 @inject IJSRuntime JS
 
-<div @ref="QuillElement" class="editor @Class"></div>
+<div>
+    <div @ref="QuillToolbarElement">
+        <dlv id="header-select" class="toolbar-item">
+            <MMenu OffsetY>
+                <ActivatorContent>
+                    <MIcon Dense @attributes="@context.Attrs">mdi-format-title</MIcon>
+                </ActivatorContent>
+
+                <ChildContent>
+                    <MList>
+                        @foreach (var item in HeaderSizeList)
+                        {
+                            <MListItem Link>
+                                <MListItemContent @onclick="() => SetHeaderSize(item)">
+                                    @switch (item)
+                                    {
+                                        case "H1":
+                                            <h1 class="m-0">H1</h1>
+                                            break;
+                                        case "H2":
+                                            <h2 class="m-0">H2</h2>
+                                            break;
+                                        case "H3":
+                                            <h3 class="m-0">H3</h3>
+                                            break;
+                                        case "H4":
+                                            <h4 class="m-0">H4</h4>
+                                            break;
+                                        case "H5":
+                                            <h5 class="m-0">H5</h5>
+                                            break;
+                                        case "H6":
+                                            <h6 class="m-0">H6</h6>
+                                            break;
+                                        default:
+                                            @item
+                                            break;
+                                    }
+                                </MListItemContent>
+                            </MListItem>
+                        }
+                    </MList>
+                </ChildContent>
+            </MMenu>
+        </dlv>
+        <button class="ql-bold"></button>
+        <div id="font-size" class="toolbar-item">
+            <MMenu OffsetY>
+                <ActivatorContent>
+                    <MIcon Dense @attributes="@context.Attrs">mdi-format-size</MIcon>
+                </ActivatorContent>
+
+                <ChildContent>
+                    <MList>
+                        @foreach (var item in FontSizeList)
+                        {
+                            <MListItem Link>
+                                <MListItemContent @onclick="() => QuillInterop.SetFontSize(JS, QuillElement, item)">
+                                    @item
+                                </MListItemContent>
+                            </MListItem>
+                        }
+                    </MList>
+                </ChildContent>
+            </MMenu>
+        </div>
+        <button class="ql-italic"></button>
+        <button class="ql-underline"></button>
+        <button class="ql-strike"></button>
+        <div id="lineheight" class="toolbar-item">
+            <MMenu OffsetY>
+                <ActivatorContent>
+                    <MIcon Dense @attributes="@context.Attrs">mdi-format-line-spacing</MIcon>
+                </ActivatorContent>
+
+                <ChildContent>
+                    <MList>
+                        @foreach (var item in LineHeightSizeList)
+                        {
+                            <MListItem Link>
+                                <MListItemContent @onclick='() => QuillInterop.SetLineHeight(JS, QuillElement, item)'>
+                                    @item
+                                </MListItemContent>
+                            </MListItem>
+                        }
+                    </MList>
+                </ChildContent>
+            </MMenu>
+        </div>
+        <select class="ql-color">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <title>pencil-outline</title>
+                <path d="M14.06,9L15,9.94L5.92,19H5V18.08L14.06,9M17.66,3C17.41,3 17.15,3.1 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18.17,3.09 17.92,3 17.66,3M14.06,6.19L3,17.25V21H6.75L17.81,9.94L14.06,6.19Z" />
+            </svg>
+        </select>
+
+        <select class="ql-background">
+        </select>
+        <select class=ql-align>
+        </select>
+        <button class="ql-table-better"></button>
+        <div id="insert-divider" class="toolbar-item" @onclick="() => QuillInterop.InsertDivider(JS, QuillElement)">
+            <MIcon Dense>mdi-minus</MIcon>
+        </div>
+    </div>
+    <div @ref="QuillElement" class="editor @Class"></div>
+</div>
+
 
 @code {
+    /// <summary>
+    /// 应用在编辑器框架上的css样式
+    /// </summary>
     [Parameter]
     public string? Class { get; set; }
     private ElementReference QuillElement { get; set; }
+    private ElementReference QuillToolbarElement { get; set; }
+
+    private readonly List<string> FontSizeList = ["10px", "13px", "16px", "18px", "24px", "32px", "48px"];
+    private readonly List<string> HeaderSizeList = ["正文", "H1", "H2", "H3", "H4", "H5", "H6"];
+    private readonly List<string> LineHeightSizeList = ["默认", "1", "1.15", "1.6", "2", "2.5", "3"];
+
+    /// <summary>
+    /// 设置标题大小
+    /// </summary>
+    /// <param name="size"></param>
+    /// <returns></returns>
+    private async Task SetHeaderSize(string size)
+    {
+        await QuillInterop.SetHeaderSize(JS, QuillElement, size);
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -20,7 +145,8 @@
                 "说点什么",
                 "snow",
                 "info",
-                true);
+                true,
+                QuillToolbarElement);
             await QuillInterop.FocusQuill(JS, QuillElement);
         }
         await base.OnAfterRenderAsync(firstRender);

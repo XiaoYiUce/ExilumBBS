@@ -1,3 +1,14 @@
 .editor {
     min-height: 60vh;
 }
+
+.toolbar-item {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    float: left;
+    height: 16px;
+    padding: 0 5px;
+    width: 28px;
+}

@@ -20,6 +20,10 @@ namespace ExilumBBS.Utils
         private const string strInsertEmoji = "QuillFunctions.insertQuillEmoji";
         private const string strFocusToEnd = "QuillFunctions.quillFocusToEnd";
         private const string strQuillFocus = "QuillFunctions.focusQuill";
+        private const string strSetQuillFontSize = "QuillFunctions.setQuillFontSize";
+        private const string strSetQuillHeaderSize = "QuillFunctions.setQuillHeaderSize";
+        private const string strSetLineHeightSize = "QuillFunctions.setLineHeightSize";
+        private const string strInsertDivider = "QuillFunctions.insertDivider";
 
         #endregion Constants
 
@@ -40,7 +44,8 @@ namespace ExilumBBS.Utils
             string placeholder,
             string theme,
             string debugLevel,
-            bool enabledToolbar)
+            bool enabledToolbar,
+            ElementReference? toolbarElement = null)
         {
             if (enabledToolbar == false)
             {
@@ -54,7 +59,7 @@ namespace ExilumBBS.Utils
                 return jsRuntime.InvokeAsync<object>(
                     strCreateQuill,
                     quillElement, readOnly,
-                    placeholder, theme, debugLevel, true);
+                    placeholder, theme, debugLevel, true, toolbarElement);
             }
 
         }
@@ -205,6 +210,78 @@ namespace ExilumBBS.Utils
         {
             return jsRuntime.InvokeAsync<object>(
                 strQuillFocus, quillElement);
+        }
+
+        /// <summary>
+        /// 设置字体大小
+        /// </summary>
+        /// <param name="jsRuntime"></param>
+        /// <param name="quillElement">Quill编辑器元素</param>
+        /// <param name="fontSize">字体大小</param>
+        /// <returns></returns>
+        internal static ValueTask<object> SetFontSize(
+            IJSRuntime jsRuntime,
+            ElementReference quillElement,
+            string fontSize)
+        {
+            return jsRuntime.InvokeAsync<object>(strSetQuillFontSize, quillElement, fontSize);
+        }
+
+        /// <summary>
+        /// 设置标题大小
+        /// </summary>
+        /// <param name="jsRuntime"></param>
+        /// <param name="quillElement"></param>
+        /// <param name="headerSize"></param>
+        /// <returns></returns>
+        internal static ValueTask<object> SetHeaderSize(
+            IJSRuntime jsRuntime,
+            ElementReference quillElement,
+            string headerSize)
+        {
+            return headerSize switch
+            {
+                "H1" => jsRuntime.InvokeAsync<object>(strSetQuillHeaderSize, quillElement, 1),
+                "H2" => jsRuntime.InvokeAsync<object>(strSetQuillHeaderSize, quillElement, 2),
+                "H3" => jsRuntime.InvokeAsync<object>(strSetQuillHeaderSize, quillElement, 3),
+                "H4" => jsRuntime.InvokeAsync<object>(strSetQuillHeaderSize, quillElement, 4),
+                "H5" => jsRuntime.InvokeAsync<object>(strSetQuillHeaderSize, quillElement, 5),
+                "H6" => jsRuntime.InvokeAsync<object>(strSetQuillHeaderSize, quillElement, 6),
+                _ => jsRuntime.InvokeAsync<object>(strSetQuillHeaderSize, quillElement, false)
+            };
+        }
+
+        /// <summary>
+        /// 设置字体大小
+        /// </summary>
+        /// <param name="jsRuntime"></param>
+        /// <param name="quillElement">Quill编辑器元素</param>
+        /// <param name="lineHeight">行高</param>
+        /// <returns></returns>
+        internal static ValueTask<object> SetLineHeight(
+            IJSRuntime jsRuntime,
+            ElementReference quillElement,
+            string lineHeight)
+        {
+            if (lineHeight == "默认")
+            {
+                return jsRuntime.InvokeAsync<object>(strSetLineHeightSize, quillElement, "");
+            }
+
+            return jsRuntime.InvokeAsync<object>(strSetLineHeightSize, quillElement, lineHeight);
+        }
+
+        /// <summary>
+        /// 插入分割线
+        /// </summary>
+        /// <param name="jsRuntime"></param>
+        /// <param name="quillElement"></param>
+        /// <returns></returns>
+        internal static ValueTask<object> InsertDivider(
+            IJSRuntime jsRuntime,
+            ElementReference quillElement)
+        {
+            return jsRuntime.InvokeAsync<object>(strInsertDivider, quillElement);
         }
     }
 }
