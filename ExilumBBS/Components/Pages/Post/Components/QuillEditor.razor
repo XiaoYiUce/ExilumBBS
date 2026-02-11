@@ -15,6 +15,15 @@
         <MIcon OnClick="() => SwitchEmojiList()">mdi-emoticon-happy-outline</MIcon>
         <MIcon OnClick="() => PickAndUpload()">mdi-image</MIcon>
     </div>
+
+    <div class="editor-imgList mt-2">
+        @foreach (var item in _uploadImgs)
+        {
+            <div class="editor-imgList-item">
+                <img src="@item" />
+            </div>
+        }
+    </div>
     @if (_emojiSelectVisible)
     {
         <Popup @bind-Visible="_emojiSelectVisible">

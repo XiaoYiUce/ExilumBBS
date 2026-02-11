@@ -121,11 +121,17 @@
     /// <returns></returns>
     private async Task Publish()
     {
+        var htmlContent = await EditorContent!.GetHtmlContent();
+        foreach (var item in EditorContent._uploadImgs)
+        {
+            htmlContent = htmlContent + $"<img src=\"{item}\" class=\"showImg\">";
+        }
+
         var newTopic = new PostNewTopic()
         {
             CategoryId = SelectedCategory,
             Title = TopicTitle,
-            Content = await EditorContent!.GetHtmlContent(),
+            Content = htmlContent,
             Code = "",
             ThemeInfo = new List<HotThemeItem>(),
             Declare = Notice
