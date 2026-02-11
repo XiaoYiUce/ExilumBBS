@@ -109,12 +109,10 @@
             }
             else {
                 // 启用默认 toolbar（Quill 默认的完整工具栏）
-                let toolbarConfig = {
-                    container: toolbarElement.childNodes.length == 0 ? defaultToolbarContainer : toolbarElement,
+                options.modules.toolbar = {
+                    container: toolbarElement.childNodes.length === 0 ? defaultToolbarContainer : toolbarElement,
                     handlers: {}
                 };
-
-                options.modules.toolbar = toolbarConfig;
                 options.modules['table-better'] = {
                     language: 'zh_CN',
                     menus: ['column', 'row', 'delete'],
@@ -122,8 +120,7 @@
                 };
             }
 
-            var quill = new Quill(quillElement, options);
-            quillElement.__quill = quill;
+            quillElement.__quill = new Quill(quillElement, options);
         },
 
         getQuillContent: function (quillElement) {

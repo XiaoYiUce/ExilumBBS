@@ -1,5 +1,12 @@
 .editor {
     min-height: 60vh;
+    width: 100%;
+    display: flex;
+}
+
+.editor-toolbar {
+    display: flex;
+    flex-direction: row;
 }
 
 .toolbar-item {
@@ -16,3 +23,47 @@
     .toolbar-item:hover i {
         color: #66ccff;
     }
+
+.editor-popup-emoji {
+    margin-top: 1rem;
+}
+
+.editor-popup-emoji-content {
+    height: 30vh;
+    overflow-y: scroll;
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+    flex-wrap: wrap
+}
+
+.editor-popup-emoji-content-item {
+    width: 80px;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.editor-popup-emoji-toolbar {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    height: 48px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 0.3rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.editor-popup-emoji-type-item {
+    height: 48px;
+    width: 48px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

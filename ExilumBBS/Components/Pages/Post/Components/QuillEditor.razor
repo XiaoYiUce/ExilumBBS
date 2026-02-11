@@ -1,120 +1,50 @@
 ﻿@namespace ExilumBBS.Components
+@using System.Text.Json
+@using ExilumBBS.Models.DTO.Emoji
+@using ExilumBBS.Models.Response.Emoji
+@using ExilumBBS.Models.Response.Signature
+@using ExilumBBS.Components.Components.Popup
+@using System.Diagnostics
 
-@inject IJSRuntime JS
+@inject IJSRuntime Js
+@inject HttpTools HttpTools
 
-<div>
-    @* <div @ref="QuillToolbarElement">
-        <dlv id="header-select" class="toolbar-item">
-            <MMenu OffsetY>
-                <ActivatorContent>
-                    <MIcon Dense @attributes="@context.Attrs" OnClick="() => { }">mdi-format-title</MIcon>
-                </ActivatorContent>
-
-                <ChildContent>
-                    <MList>
-                        @foreach (var item in HeaderSizeList)
+<div class="@Class">
+    <div @ref="QuillElement" class="editor"></div>
+    <div class="editor-toolbar mt-2 mb-2">
+        <MIcon OnClick="() => SwitchEmojiList()">mdi-emoticon-happy-outline</MIcon>
+        <MIcon OnClick="() => PickAndUpload()">mdi-image</MIcon>
+    </div>
+    @if (_emojiSelectVisible)
+    {
+        <Popup @bind-Visible="_emojiSelectVisible">
+            <div class="editor-popup-emoji">
+                <div class="editor-popup-emoji-content">
+                    @if (_emojiList != null && _selectedEmoji != null)
+                    {
+                        @foreach (var item in _selectedEmoji)
                         {
-                            <MListItem Link>
-                                <MListItemContent @onclick="() => SetHeaderSize(item)">
-                                    @switch (item)
-                                    {
-                                        case "H1":
-                                            <h1 class="m-0">H1</h1>
-                                            break;
-                                        case "H2":
-                                            <h2 class="m-0">H2</h2>
-                                            break;
-                                        case "H3":
-                                            <h3 class="m-0">H3</h3>
-                                            break;
-                                        case "H4":
-                                            <h4 class="m-0">H4</h4>
-                                            break;
-                                        case "H5":
-                                            <h5 class="m-0">H5</h5>
-                                            break;
-                                        case "H6":
-                                            <h6 class="m-0">H6</h6>
-                                            break;
-                                        default:
-                                            @item
-                                            break;
-                                    }
-                                </MListItemContent>
-                            </MListItem>
+                            <div class="editor-popup-emoji-content-item" @onclick="() => InsertEmoji(item.UrlPath)">
+                                <img src="@item.UrlPath" style="width:100%" />
+                                <span>@item.UrlDesc</span>
+                            </div>
                         }
-                    </MList>
-                </ChildContent>
-            </MMenu>
-        </dlv>
-        <button class="ql-bold"></button>
-        <div id="font-size" class="toolbar-item">
-            <MMenu OffsetY>
-                <ActivatorContent>
-                    <MIcon Dense @attributes="@context.Attrs" OnClick="() => { }">mdi-format-size</MIcon>
-                </ActivatorContent>
-
-                <ChildContent>
-                    <MList>
-                        @foreach (var item in FontSizeList)
+                    }
+                </div>
+                <div class="editor-popup-emoji-toolbar">
+                    @if (_emojiList != null)
+                    {
+                        @foreach (var item in _emojiList)
                         {
-                            <MListItem Link>
-                                <MListItemContent @onclick="() => QuillInterop.SetFontSize(JS, QuillElement, item)">
-                                    @item
-                                </MListItemContent>
-                            </MListItem>
+                            <div class="editor-popup-emoji-type-item" @onclick="() => SwitchSelectedEmoji(item.ClassifyId)">
+                                <img src="@item.ImgAddr" style="width:100%;" />
+                            </div>
                         }
-                    </MList>
-                </ChildContent>
-            </MMenu>
-        </div>
-        <button class="ql-italic"></button>
-        <button class="ql-underline"></button>
-        <button class="ql-strike"></button>
-        <div id="lineheight" class="toolbar-item">
-            <MMenu OffsetY>
-                <ActivatorContent>
-                    <MIcon Dense @attributes="@context.Attrs" OnClick="() => { }">mdi-format-line-spacing</MIcon>
-                </ActivatorContent>
-
-                <ChildContent>
-                    <MList>
-                        @foreach (var item in LineHeightSizeList)
-                        {
-                            <MListItem Link>
-                                <MListItemContent @onclick='() => QuillInterop.SetLineHeight(JS, QuillElement, item)'>
-                                    @item
-                                </MListItemContent>
-                            </MListItem>
-                        }
-                    </MList>
-                </ChildContent>
-            </MMenu>
-        </div>
-        <select class="ql-color">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <title>pencil-outline</title>
-                <path d="M14.06,9L15,9.94L5.92,19H5V18.08L14.06,9M17.66,3C17.41,3 17.15,3.1 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18.17,3.09 17.92,3 17.66,3M14.06,6.19L3,17.25V21H6.75L17.81,9.94L14.06,6.19Z" />
-            </svg>
-        </select>
-
-        <select class="ql-background">
-        </select>
-        <select class=ql-align>
-        </select>
-        <button class="ql-table-better"></button>
-        <div id="insert-divider" class="toolbar-item">
-            <MIcon OnClick="() => QuillInterop.InsertDivider(JS, QuillElement)" Dense>mdi-minus</MIcon>
-        </div>
-        <div id="insert-divider" class="toolbar-item">
-            <MIcon OnClick="() => QuillInterop.InsertDivider(JS, QuillElement)" Dense>mdi-image</MIcon>
-        </div>
-        <div id="insert-divider" class="toolbar-item">
-            <MIcon Dense OnClick="() => { }">mdi-emoticon-happy-outline</MIcon>
-        </div>
-
-    </div> *@
-    <div @ref="QuillElement" class="editor @Class"></div>
+                    }
+                </div>
+            </div>
+        </Popup>
+    }
 </div>
 
 
@@ -124,30 +54,149 @@
     /// </summary>
     [Parameter]
     public string? Class { get; set; }
-    private ElementReference QuillElement { get; set; }
-    private ElementReference QuillToolbarElement { get; set; }
 
-    private readonly List<string> FontSizeList = ["10px", "13px", "16px", "18px", "24px", "32px", "48px"];
-    private readonly List<string> HeaderSizeList = ["正文", "H1", "H2", "H3", "H4", "H5", "H6"];
-    private readonly List<string> LineHeightSizeList = ["默认", "1", "1.15", "1.6", "2", "2.5", "3"];
+    /// <summary>
+    /// 上传的图片
+    /// </summary>
+    public List<string> _uploadImgs { get; set; } = [];
+
+    private bool _emojiSelectVisible;
+
+    /// <summary>
+    /// 表情包列表
+    /// </summary>
+    private List<EmojiCategory>? _emojiList;
+
+    /// <summary>
+    /// 选中的表情包
+    /// </summary>
+    private List<EmojiItem>? _selectedEmoji;
+
+    private int _selectedClassifyId;
+
+    private ElementReference QuillElement { get; set; }
 
     /// <summary>
     /// 获取HTML
     /// </summary>
     /// <returns></returns>
-    public async Task<string> GetHTMLContent()
+    public async Task<string> GetHtmlContent()
     {
-        return await QuillInterop.GetHTML(JS, QuillElement);
+        return await QuillInterop.GetHTML(Js, QuillElement);
     }
 
     /// <summary>
-    /// 设置标题大小
+    /// 选取图片并上传
     /// </summary>
-    /// <param name="size"></param>
     /// <returns></returns>
-    private async Task SetHeaderSize(string size)
+    private async Task PickAndUpload()
     {
-        await QuillInterop.SetHeaderSize(JS, QuillElement, size);
+        try
+        {
+            var results = await MediaPicker.PickPhotosAsync(new MediaPickerOptions
+            {
+                // 限制选取图片数量（0为不限制）
+                SelectionLimit = 0,
+                RotateImage = false,
+                PreserveMetaData = false,
+            });
+
+            var uploadUrlList = new List<string>();
+
+            var signatureResponse = await HttpTools.PostAsync("/community/signature", null);
+            if (signatureResponse != null && signatureResponse.Code == 0 && signatureResponse.Data.HasValue)
+            {
+                var signature = signatureResponse.Data.Value.Deserialize<SignatureResponse>();
+
+                if (signature != null)
+                {
+                    foreach (var item in results)
+                    {
+                        var uploadName = await HttpTools.UploadToOSS(signature.Host, signature.Policy, signature.AccessId, signature.Dir, signature.Signature, item);
+                        if (!string.IsNullOrEmpty(uploadName))
+                        {
+                            // 将上传完成的图片地址加入到URL中
+                            uploadUrlList.Add($"{signature.CDNHost}/{signature.Dir}{uploadName}");
+                            Debug.WriteLine($"OSS图片地址:{signature.CDNHost}/{signature.Dir}{uploadName}");
+                        }
+                    }
+                }
+
+            }
+
+            _uploadImgs.AddRange(uploadUrlList);
+        }
+        catch (Exception ex)
+        {
+            // 打印错误信息
+            Debug.Fail(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// 切换表情包面板状态
+    /// </summary>
+    /// <returns></returns>
+    private async Task SwitchEmojiList()
+    {
+        if (_emojiSelectVisible)
+        {
+            _emojiSelectVisible = false;
+            // 表情面板关闭后，主动聚焦回编辑器（提升体验）
+            await QuillInterop.FocusQuill(Js, QuillElement);
+        }
+        else
+        {
+            await GetEmojiList();
+            _emojiSelectVisible = true;
+        }
+    }
+
+    /// <summary>
+    /// 切换表情包
+    /// </summary>
+    /// <param name="ClassifyId"></param>
+    /// <returns></returns>
+    private async Task SwitchSelectedEmoji(int ClassifyId)
+    {
+        if (_emojiList != null)
+        {
+            var selected = _emojiList.Where(it => it.ClassifyId == ClassifyId).First();
+            _selectedEmoji = selected.EmojiList;
+            _selectedClassifyId = selected.ClassifyId;
+        }
+    }
+
+    /// <summary>
+    /// 获取表情包列表
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetEmojiList()
+    {
+        var response = await HttpTools.GetAsync("/community/emoji");
+        if (response != null && response.Code == 0)
+        {
+            if (response.Data.HasValue)
+            {
+                var emojiList = response.Data.Value.Deserialize<EmojiResponse>();
+                if (emojiList != null && emojiList.List != null)
+                {
+                    this._emojiList = emojiList.List;
+                    this._selectedEmoji = emojiList.List.First().EmojiList;
+                    this._selectedClassifyId = emojiList.List.First().ClassifyId;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 插入选定表情
+    /// </summary>
+    /// <param name="emojiUrl"></param>
+    /// <returns></returns>
+    private async Task InsertEmoji(string emojiUrl)
+    {
+        await QuillInterop.InsertQuillEmoji(Js, QuillElement, emojiUrl);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -155,14 +204,14 @@
         if (firstRender)
         {
             await QuillInterop.CreateQuill(
-                JS,
+                Js,
                 QuillElement,
                 false,
                 "说点什么",
                 "snow",
                 "info",
                 false);
-            await QuillInterop.FocusQuill(JS, QuillElement);
+            await QuillInterop.FocusQuill(Js, QuillElement);
         }
         await base.OnAfterRenderAsync(firstRender);
     }

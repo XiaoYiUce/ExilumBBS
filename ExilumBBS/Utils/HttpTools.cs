@@ -1,7 +1,6 @@
 ﻿using ExilumBBS.Models.Response;
 using ExilumBBS.Services;
 using ExilumBBS.State;
-using Flurl.Http;
 using Masa.Blazor;
 using System;
 using System.Collections.Generic;
